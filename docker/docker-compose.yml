@@ -1,0 +1,12 @@
+services:
+  pull-update-publisher:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.publisher
+    environment:
+      FINALIZE_SNAPSHOT_URL: http://localhost:3000
+      TARGET_CHAIN_URL: http://localhost:3000
+    command: [
+      "/bin/pull-update-publisher"
+    ]
+
