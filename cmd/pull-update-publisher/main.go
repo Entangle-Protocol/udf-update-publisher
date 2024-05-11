@@ -35,7 +35,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Println("Config loaded: %+v", config)
+		fmt.Printf("Config loaded: %+v\n", config)
 	},
 }
 
