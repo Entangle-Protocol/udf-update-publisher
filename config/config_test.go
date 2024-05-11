@@ -11,6 +11,7 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	finalizeSnapshotUrl := "http://localhost:3000"
 	assert.Nil(t, os.Setenv("FINALIZE_SNAPSHOT_URL", finalizeSnapshotUrl))
 	assert.Nil(t, os.Setenv("TARGET_CHAIN_URL", finalizeSnapshotUrl))
+	assert.Nil(t, os.Setenv("PULL_ORACLE_ADDRESS", "0x5ca636af0aB140A75515Bd708E3e382aa7A70aEb"))
 
 	// Load config
 	config, err := LoadConfigFromEnv()

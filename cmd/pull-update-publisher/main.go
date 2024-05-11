@@ -3,10 +3,15 @@ package main
 import (
 	"fmt"
 	"time"
+	"net/http"
+
 	"github.com/spf13/cobra"
+	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/config"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/publisher"
 )
 
 var pullUpdatePublisherCmd = &cobra.Command{
@@ -36,6 +41,44 @@ var pullUpdatePublisherCmd = &cobra.Command{
 		}
 
 		fmt.Printf("Config loaded: %+v\n", config)
+
+		// Create fetcher
+		restFetcher, err := fetcher.NewRestFetcher(
+			config.FinalizeSnapshotUrl, &http.Client{},
+		)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"finalizeSnapshotUrl": config.FinalizeSnapshotUrl,
+			}).Fatalf("Failed to create fetcher: %v", err)
+			panic(err)
+		}
+
+		// Create transactor
+		client, err := ethclient.Dial(config.TargetChainUrl)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"targetChainUrl": config.TargetChainUrl,
+			}).Fatalf("Failed to dial target chain: %v", err)
+			panic(err)
+		}
+
+		transactor, err := publisher.NewTransactor(client, config.PullOracleAddress)
+		if err != nil {
+			log.Fatalf("Failed to create transactor: %v", err)
+		}
+
+		// Create publisher
+		publisher := publisher.NewUpdatePublisher(transactor, restFetcher)
+
+		for {
+			// Publish latest feed
+			err := publisher.PublishUpdate()
+			if err != nil {
+				log.Errorf("Failed to publish update: %v", err)
+			}
+
+			time.Sleep(10 * time.Second)
+		}
 	},
 }
 
