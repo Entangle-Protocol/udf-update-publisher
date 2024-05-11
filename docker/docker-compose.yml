@@ -6,6 +6,7 @@ services:
     environment:
       FINALIZE_SNAPSHOT_URL: http://localhost:3000
       TARGET_CHAIN_URL: http://localhost:3000
+      PULL_ORACLE_ADDRESS: 0x5ca636af0aB140A75515Bd708E3e382aa7A70aEb
     command: [
       "/bin/pull-update-publisher"
     ]
