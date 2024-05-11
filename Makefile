@@ -6,3 +6,6 @@ generate-contract-bindings:
 
 test:
 	$(GO) test ./...
+
+mocks:
+	mockery
