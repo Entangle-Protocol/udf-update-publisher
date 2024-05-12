@@ -1,5 +1,3 @@
-image: 'golang:1.21'
-
 stages:
   - versioning
   - sonarqube
@@ -17,18 +15,18 @@ versioning and prepare:
     - linux
 
 # Build pull-update-publisher
-build:
-  stage: build
-  image: golang:1.21
-  script:
-    - go build -v ./...
-  tags:
-    - linux
+# build:
+#   stage: build
+#   image: golang:1.22
+#   script:
+#     - go build -v ./...
+#   tags:
+#     - linux
 
 # Run tests
 test:
   stage: build
-  image: golang:1.21
+  image: golang:1.22
   script:
     - go test -v ./...
     # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
