@@ -79,7 +79,7 @@ for abiFile in $abiFiles; do
   outProviderPath="$outdir/$providerName/$abiName"
   mkdir -p "$outProviderPath"
 
-  if [ -f "$bytecodeFile" ]; then
+  if [ -r "$bytecodeFile" ]; then
     echo "Generating bindings with bytecode file: $bytecodeFile"
     $ABIGEN --abi "$abiFile" --bin "$bytecodeFile" --pkg "$abiName" --out "$outProviderPath/$abiName.go"
     continue
