@@ -17,7 +17,7 @@ versioning and prepare:
 # Build pull-update-publisher
 build:
   stage: build
-  image: golang:1.22
+  image: 'golang:1.22'
   script:
     - go build -v ./...
   tags:
@@ -26,7 +26,7 @@ build:
 # Run tests
 test:
   stage: build
-  image: golang:1.22
+  image: 'golang:1.22'
   script:
     - go test -v ./...
     # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
