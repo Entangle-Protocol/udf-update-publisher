@@ -1,9 +1,9 @@
 package publisher
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/stretchr/testify/assert"
+	"testing"
 
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
 

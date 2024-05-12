@@ -3,19 +3,19 @@ package transactor
 import (
 	"context"
 	"fmt"
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
-	"github.com/stretchr/testify/assert"
-	"github.com/brianvoe/gofakeit/v7"
 
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/keystore"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
-	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	ethsim "github.com/ethereum/go-ethereum/ethclient/simulated"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	ethsim "github.com/ethereum/go-ethereum/ethclient/simulated"
 )
 
 func simTestBackend(testAddr ethcommon.Address) *ethsim.Backend {
@@ -67,4 +67,3 @@ func TestSendUpdate(t *testing.T) {
 	// Expect error due to invalid merkle proof (since we generate it using random data)
 	assert.Contains(t, err.Error(), "execution reverted")
 }
-

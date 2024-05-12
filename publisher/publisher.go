@@ -12,7 +12,7 @@ import (
 
 type UpdatePublisher struct {
 	transactor transactor.ITransactor
-	fetcher	fetcher.IFetcher
+	fetcher    fetcher.IFetcher
 }
 
 func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) *types.MerkleRootUpdate {
@@ -31,18 +31,17 @@ func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) *types.MerkleRoo
 
 	return &types.MerkleRootUpdate{
 		NewMerkleRoot: proof.MerkleRoot,
-		MerkleProof: merkleProof,
-		Signatures: signatures,
-		Price: big.NewInt(0).SetBytes(proof.Value.PriceData),
-		Timestamp: big.NewInt(proof.Value.Timestamp),
+		MerkleProof:   merkleProof,
+		Signatures:    signatures,
+		Price:         big.NewInt(0).SetBytes(proof.Value.PriceData),
+		Timestamp:     big.NewInt(proof.Value.Timestamp),
 	}
 }
-
 
 func NewUpdatePublisher(transactor transactor.ITransactor, fetcher fetcher.IFetcher) *UpdatePublisher {
 	return &UpdatePublisher{
 		transactor: transactor,
-		fetcher: fetcher,
+		fetcher:    fetcher,
 	}
 }
 
@@ -64,4 +63,3 @@ func (up *UpdatePublisher) PublishUpdate() error {
 
 	return nil
 }
-

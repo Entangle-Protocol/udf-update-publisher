@@ -2,10 +2,10 @@ package transactor
 
 import (
 	"context"
-	"math/big"
 	"crypto/ecdsa"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
+	"math/big"
 
 	// "github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -21,10 +21,10 @@ type Transactor struct {
 	PullOracle *PullOracle.PullOracle
 	// Private key of the signer that sends price updates
 	PrivateKey *ecdsa.PrivateKey
-	ChainID *big.Int
-	opts *bind.TransactOpts
-	client bind.ContractBackend
-	ctx context.Context
+	ChainID    *big.Int
+	opts       *bind.TransactOpts
+	client     bind.ContractBackend
+	ctx        context.Context
 }
 
 func NewTransactor(
@@ -42,9 +42,9 @@ func NewTransactor(
 	transactor := &Transactor{
 		PullOracle: pullOracle,
 		PrivateKey: privateKey,
-		ChainID: chainID,
-		client: client,
-		ctx: context,
+		ChainID:    chainID,
+		client:     client,
+		ctx:        context,
 	}
 
 	opts, err := transactor.createTransactOpts(chainID)
@@ -103,7 +103,7 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 	)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"error": err,
+			"error":  err,
 			"update": update,
 		}).Error("Failed to execute PullOracle.GetLastPrice")
 		return err

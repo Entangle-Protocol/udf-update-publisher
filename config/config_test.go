@@ -1,10 +1,10 @@
 package config
 
 import (
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
-	"github.com/stretchr/testify/assert"
-	"github.com/brianvoe/gofakeit/v7"
 )
 
 func TestLoadConfigWithCorrectEnv(t *testing.T) {

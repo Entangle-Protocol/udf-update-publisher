@@ -2,24 +2,24 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"net/http"
+	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/config"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/keystore"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/publisher"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/transactor"
-	"gitlab.ent-dx.com/entangle/pull-update-publisher/keystore"
 )
 
 var pullUpdatePublisherCmd = &cobra.Command{
 	Use:   "pull-update-publisher",
 	Short: "Starts service that publishes prices to PullOracle contract on destination chains",
-	Long: `Starts service that publishes prices to PullOracle contract on destination chains.`,
+	Long:  `Starts service that publishes prices to PullOracle contract on destination chains.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := cmd.Context()
 
@@ -60,7 +60,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 
 		//
 		// Create transactor
-		// 
+		//
 
 		client, err := ethclient.Dial(config.TargetChainUrl)
 		if err != nil {

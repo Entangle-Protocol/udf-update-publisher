@@ -7,6 +7,9 @@ generate-contract-bindings:
 docker-up:
 	$(DOCKER_COMPOSE) -f ./docker/docker-compose.yml up
 
+format:
+	$(GO) fmt ./...
+
 test:
 	$(GO) test ./...
 

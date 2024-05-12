@@ -27,11 +27,11 @@ type EntangleFeedProof struct {
 	Signatures   []HashEncodedSignatureDoc `json:"signatures"`
 	MerkleProofs [][]byte                  `json:"merkleProofs"`
 	Key          string                    `json:"key"`
-	Value        FinalizedDataDoc    `json:"value"`
+	Value        FinalizedDataDoc          `json:"value"`
 }
 
 type RestFetcher struct {
-	client *http.Client
+	client               *http.Client
 	FinalizedSnapshotUrl string
 }
 
@@ -40,7 +40,7 @@ func NewRestFetcher(
 	client *http.Client,
 ) (*RestFetcher, error) {
 	return &RestFetcher{
-		client: client,
+		client:               client,
 		FinalizedSnapshotUrl: finalizedSnapshotUrl,
 	}, nil
 }

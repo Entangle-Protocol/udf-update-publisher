@@ -1,23 +1,23 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
-	"errors"
 	"regexp"
 
-	"github.com/kelseyhightower/envconfig"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/kelseyhightower/envconfig"
 )
 
 type AppConfig struct {
-	FinalizeSnapshotUrl string `envconfig:"FINALIZE_SNAPSHOT_URL" required:"true"`
-	TargetChainUrl string `envconfig:"TARGET_CHAIN_URL" required:"true"`
-	PullOracleAddress common.Address `envconfig:"PULL_ORACLE_ADDRESS" required:"true"`
-	PrivateKey string `envconfig:"PRIVATE_KEY" required:"true"`
+	FinalizeSnapshotUrl string         `envconfig:"FINALIZE_SNAPSHOT_URL" required:"true"`
+	TargetChainUrl      string         `envconfig:"TARGET_CHAIN_URL" required:"true"`
+	PullOracleAddress   common.Address `envconfig:"PULL_ORACLE_ADDRESS" required:"true"`
+	PrivateKey          string         `envconfig:"PRIVATE_KEY" required:"true"`
 }
 
-// This function verifies the symbolic correctness of the configuration. 
+// This function verifies the symbolic correctness of the configuration.
 // This however does not guarantee the semantic correctness of the configuration.
 func (config AppConfig) Verify() error {
 	// Check if URLs are valid

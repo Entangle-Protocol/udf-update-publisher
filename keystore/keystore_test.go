@@ -1,8 +1,8 @@
 package keystore
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
