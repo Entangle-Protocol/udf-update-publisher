@@ -1,0 +1,46 @@
+stages:
+  - versioning
+  - sonarqube
+  - container_build
+  - push
+  - clean_up
+  - deploy
+
+versioning and prepare:
+  stage: versioning
+  script:
+    - echo "Version is $CI_COMMIT_BRANCH.$CI_PIPELINE_ID"
+  tags:
+    - linux
+
+dev_build:
+  stage: container_build
+  script:
+    - docker build -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
+    - docker build -f docker/Dockerfile.publisher -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher-keys:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
+  tags:
+    - linux
+
+push_to_aws:
+  stage: push
+  script:
+    - docker push 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 
+    - docker push 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher-keys:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
+  tags:
+    - linux
+
+clean_up_image:
+  stage: clean_up
+  script:
+    - docker rmi 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher-keys:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID -f
+  tags:
+    - linux
+
+# deploy_pull-update-publisher:
+#   stage: deploy
+#   script:
+#     - git clone https://oauth2:$OAUTH_KEY@gitlab.ent-dx.com/devops/ci-scripts.git
+#     - python3 ci-scripts/awx_call.py https://awx.ent-dx.com/api/v2/job_templates/102/launch/ $AWX_TOKEN script_target:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
+#   tags:
+#     - linux
+#   when: manual
