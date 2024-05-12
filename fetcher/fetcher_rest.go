@@ -21,6 +21,7 @@ type FinalizedDataDoc struct {
 	PriceData []byte `bson:"priceData"`
 }
 
+// FeedProof holds the latest feed proof. Matches the schema from finalized-data-snapshot backend API
 type EntangleFeedProof struct {
 	MerkleRoot   common.Hash               `json:"merkleRoot"`
 	Signatures   []HashEncodedSignatureDoc `json:"signatures"`
