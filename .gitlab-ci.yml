@@ -1,6 +1,7 @@
 stages:
   - versioning
   - sonarqube
+    build
   - container_build
   - push
   - clean_up
@@ -12,6 +13,24 @@ versioning and prepare:
     - echo "Version is $CI_COMMIT_BRANCH.$CI_PIPELINE_ID"
   tags:
     - linux
+
+# Build pull-update-publisher
+build:
+  stage: build
+  image: golang:1.22
+  script:
+    - go build -v ./...
+
+# Run tests
+test:
+  stage: build
+  image: golang:1.22
+  script: 
+    - go test -v ./...
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
 
 dev_build:
   stage: container_build
