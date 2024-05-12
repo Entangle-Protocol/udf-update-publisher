@@ -2,6 +2,7 @@ package transactor
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"testing"
 	"github.com/stretchr/testify/assert"
@@ -52,6 +53,9 @@ func TestSendUpdate(t *testing.T) {
 	pullOracleAddress, _, _, err := PullOracle.DeployPullOracle(deployOpts, client)
 	assert.Nil(t, err)
 
+	blockHash := backend.Commit()
+	fmt.Println("commited state with block hash:", blockHash)
+
 	transactor, err := NewTransactor(ctx, client, key, chainID, pullOracleAddress)
 	assert.Nil(t, err)
 
@@ -59,8 +63,8 @@ func TestSendUpdate(t *testing.T) {
 	err = gofakeit.Struct(&merkleUpdate)
 	assert.Nil(t, err)
 
-	// FIXME: Temporarily assert error due to `no contract code at given address`
 	err = transactor.SendUpdate(&merkleUpdate)
-	assert.Error(t, err)
+	// Expect error due to invalid merkle proof (since we generate it using random data)
+	assert.Contains(t, err.Error(), "execution reverted")
 }
 
