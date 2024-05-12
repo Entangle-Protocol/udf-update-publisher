@@ -72,10 +72,20 @@ for abiFile in $abiFiles; do
   dirName="$(dirname "$abiFile")"
   providerName=${dirName##*abi/}
 
+  bytecodeFile="$dirName/$abiName.bin"
+  echo "providerName: $providerName"
+
   # Create the output directory if it doesn't exist
   outProviderPath="$outdir/$providerName/$abiName"
   mkdir -p "$outProviderPath"
 
-  # Generate golang contract bindings for the current abi file
-  $ABIGEN --abi "$abiFile" --pkg "$abiName" --out "$outProviderPath/$abiName.go"
+  if [ -f "$bytecodeFile" ]; then
+    echo "Generating bindings with bytecode file: $bytecodeFile"
+    $ABIGEN --abi "$abiFile" --bin "$bytecodeFile" --pkg "$abiName" --out "$outProviderPath/$abiName.go"
+    continue
+  else
+    echo "Generating bindings without bytecode file"
+    # Generate golang contract bindings for the current abi file
+    $ABIGEN --abi "$abiFile" --pkg "$abiName" --out "$outProviderPath/$abiName.go"
+  fi
 done
