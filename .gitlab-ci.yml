@@ -17,7 +17,7 @@ dev_build:
   stage: container_build
   script:
     - docker build -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
-    - docker build -f docker/Dockerfile.publisher -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher-keys:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
+    - docker build -f ./docker/Dockerfile.publisher -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher-keys:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
   tags:
     - linux
 
