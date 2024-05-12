@@ -12,6 +12,7 @@ import (
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/config"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/publisher"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/keystore"
 )
 
 var pullUpdatePublisherCmd = &cobra.Command{
@@ -19,6 +20,8 @@ var pullUpdatePublisherCmd = &cobra.Command{
 	Short: "Starts service that publishes prices to PullOracle contract on destination chains",
 	Long: `Starts service that publishes prices to PullOracle contract on destination chains.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		ctx := cmd.Context()
+
 		verbosity, err := cmd.Flags().GetInt("verbosity")
 		if err != nil {
 			log.Fatalf("Failed to parse verbosity flag: %v", err)
@@ -39,6 +42,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 			log.Fatalf("Failed to load config: %v", err)
 			panic(err)
 		}
+		config.Verify()
 
 		fmt.Printf("Config loaded: %+v\n", config)
 
@@ -53,7 +57,10 @@ var pullUpdatePublisherCmd = &cobra.Command{
 			panic(err)
 		}
 
+		//
 		// Create transactor
+		// 
+
 		client, err := ethclient.Dial(config.TargetChainUrl)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -62,9 +69,21 @@ var pullUpdatePublisherCmd = &cobra.Command{
 			panic(err)
 		}
 
-		transactor, err := publisher.NewTransactor(client, config.PullOracleAddress)
+		chainID, err := client.ChainID(ctx)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"targetChainUrl": config.TargetChainUrl,
+			}).Fatalf("Failed to get chain ID: %v", err)
+			panic(err)
+		}
+
+		// Load private key
+		key, err := keystore.ParseKeyFromHex(config.PrivateKey)
+
+		transactor, err := publisher.NewTransactor(ctx, client, key, chainID, config.PullOracleAddress)
 		if err != nil {
 			log.Fatalf("Failed to create transactor: %v", err)
+			panic(err)
 		}
 
 		// Create publisher

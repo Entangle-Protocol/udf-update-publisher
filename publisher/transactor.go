@@ -1,6 +1,7 @@
 package publisher
 
 import (
+	"context"
 	"math/big"
 	"crypto/ecdsa"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
@@ -22,9 +23,11 @@ type Transactor struct {
 	ChainID *big.Int
 	opts *bind.TransactOpts
 	client bind.ContractBackend
+	ctx context.Context
 }
 
 func NewTransactor(
+	context context.Context,
 	client bind.ContractBackend,
 	privateKey *ecdsa.PrivateKey,
 	chainID *big.Int,
@@ -40,6 +43,7 @@ func NewTransactor(
 		PrivateKey: privateKey,
 		ChainID: chainID,
 		client: client,
+		ctx: context,
 	}
 
 	opts, err := transactor.createTransactOpts(chainID)
@@ -59,6 +63,17 @@ func (t *Transactor) createTransactOpts(chainID *big.Int) (*bind.TransactOpts, e
 	if err != nil {
 		return nil, err
 	}
+
+	// Get nonce
+	nonce, err := t.client.PendingNonceAt(
+		t.ctx,
+		opts.From,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	opts.Nonce = big.NewInt(int64(nonce))
 
 	return opts, nil
 }
