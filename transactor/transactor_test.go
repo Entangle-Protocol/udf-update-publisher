@@ -49,7 +49,7 @@ func TestSendUpdate(t *testing.T) {
 	assert.Nil(t, err)
 
 
-	// Temporarily assert error due to `no contract code at given address`
+	// FIXME: Temporarily assert error due to `no contract code at given address`
 	err = transactor.SendUpdate(&merkleUpdate)
 	assert.Error(t, err)
 }

@@ -44,8 +44,10 @@ func (config AppConfig) Verify() error {
 // LoadConfig reads environment variables and initializes an AppConfig struct.
 func LoadConfigFromEnv() (*AppConfig, error) {
 	var config AppConfig
-	err := envconfig.Process("", &config)
-	if err != nil {
+	if err := envconfig.Process("", &config); err != nil {
+		return nil, err
+	}
+	if err := config.Verify(); err != nil {
 		return nil, err
 	}
 	return &config, nil
