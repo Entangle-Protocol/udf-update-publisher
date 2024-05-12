@@ -26,7 +26,7 @@ versioning and prepare:
 # Run tests
 test:
   stage: build
-  image: golang:1.22
+  image: golangalksdjlkasjd:latest
   script:
     - go test -v ./...
     # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
