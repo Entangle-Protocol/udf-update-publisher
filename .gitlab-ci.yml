@@ -27,12 +27,15 @@ build:
 test:
   stage: build
   image: golang:1.22
-  script: 
+  script:
     - go test -v ./...
-  artifacts:
-    when: always
-    reports:
-      junit: report.xml
+    # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
+  # artifacts:
+  #   when: always
+  #   paths:
+  #     - test-report.json
+  #     - coverage.out
+  #   expire_in: 1 hour
   tags:
     - linux
 
