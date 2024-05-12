@@ -20,6 +20,8 @@ build:
   image: golang:1.22
   script:
     - go build -v ./...
+  tags:
+    - linux
 
 # Run tests
 test:
@@ -31,6 +33,8 @@ test:
     when: always
     reports:
       junit: report.xml
+  tags:
+    - linux
 
 dev_build:
   stage: container_build
