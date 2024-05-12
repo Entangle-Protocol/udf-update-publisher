@@ -12,6 +12,7 @@ import (
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/config"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/publisher"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/transactor"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/keystore"
 )
 
@@ -80,7 +81,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 		// Load private key
 		key, err := keystore.ParseKeyFromHex(config.PrivateKey)
 
-		transactor, err := publisher.NewTransactor(ctx, client, key, chainID, config.PullOracleAddress)
+		transactor, err := transactor.NewTransactor(ctx, client, key, chainID, config.PullOracleAddress)
 		if err != nil {
 			log.Fatalf("Failed to create transactor: %v", err)
 			panic(err)

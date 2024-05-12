@@ -1,4 +1,4 @@
-package publisher
+package transactor
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/keystore"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
 
 	ethsim "github.com/ethereum/go-ethereum/ethclient/simulated"
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -43,7 +44,7 @@ func TestSendUpdate(t *testing.T) {
 	transactor, err := NewTransactor(ctx, client, key, chainID, testAddr)
 	assert.Nil(t, err)
 
-	var merkleUpdate MerkleRootUpdate
+	var merkleUpdate types.MerkleRootUpdate
 	err = gofakeit.Struct(&merkleUpdate)
 	assert.Nil(t, err)
 
@@ -52,3 +53,4 @@ func TestSendUpdate(t *testing.T) {
 	err = transactor.SendUpdate(&merkleUpdate)
 	assert.Error(t, err)
 }
+

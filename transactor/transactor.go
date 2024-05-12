@@ -1,10 +1,11 @@
-package publisher
+package transactor
 
 import (
 	"context"
 	"math/big"
 	"crypto/ecdsa"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
 
 	// "github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -13,7 +14,7 @@ import (
 )
 
 type ITransactor interface {
-	SendUpdate(update *MerkleRootUpdate) error
+	SendUpdate(update *types.MerkleRootUpdate) error
 }
 
 type Transactor struct {
@@ -78,7 +79,7 @@ func (t *Transactor) createTransactOpts(chainID *big.Int) (*bind.TransactOpts, e
 	return opts, nil
 }
 
-func (t *Transactor) SendUpdate(update *MerkleRootUpdate) error {
+func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 
 	// Remap to correct type...
 	signatures := make([]PullOracle.PullOracleSignature, len(update.Signatures))

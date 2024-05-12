@@ -8,6 +8,9 @@ import (
 )
 
 func NewMockIFetcher(t *testing.T) *mockFetcher.MockIFetcher {
-	// t.Cleanup = func() { }
 	return mockFetcher.NewMockIFetcher(t)
 }
+
+// func NewMockITransactor(t *testing.T) *mockPublisher.MockITransactor {
+// 	return mockPublisher.NewMockITransactor(t)
+// }
