@@ -14,21 +14,21 @@ versioning and prepare:
   tags:
     - linux
 
-# # Run tests
-# test:
-#   stage: build
-#   # image: golangalksdjlkasjd:latest
-#   script:
-#     - go test -v ./...
-#     # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
-#   # artifacts:
-#   #   when: always
-#   #   paths:
-#   #     - test-report.json
-#   #     - coverage.out
-#   #   expire_in: 1 hour
-#   tags:
-#     - linux
+# Run tests
+dev_test:
+  stage: build
+  image: golang:latest
+  script:
+    - go test -v ./...
+    # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
+  # artifacts:
+  #   when: always
+  #   paths:
+  #     - test-report.json
+  #     - coverage.out
+  #   expire_in: 1 hour
+  tags:
+    - docker
 
 dev_build:
   stage: container_build
