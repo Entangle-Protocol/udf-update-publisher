@@ -29,7 +29,7 @@ dev_test:
   #   expire_in: 1 hour
   only:
     changes:
-      - **/*.go
+      - /*.go
   tags:
     - docker
 
