@@ -39,7 +39,10 @@ func TestSendUpdate(t *testing.T) {
 
 	testAddr := ethcommon.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
 	backend := simTestBackend(testAddr)
-	defer backend.Close()
+	defer func () {
+		err := backend.Close()
+		assert.Nil(t, err)
+	}()
 
 	client := backend.Client()
 	chainID, err := client.ChainID(ctx)
