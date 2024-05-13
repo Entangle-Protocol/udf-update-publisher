@@ -29,6 +29,12 @@ var pullUpdatePublisherCmd = &cobra.Command{
 			panic(err)
 		}
 
+		configPath, err := cmd.Flags().GetString("config")
+		if err != nil {
+			log.Fatalf("Failed to parse config flag: %v", err)
+			panic(err)
+		}
+
 		enableLines, err := cmd.Flags().GetBool("lines")
 		if err != nil {
 			log.Fatalf("Failed to parse lines flag: %v", err)
@@ -38,66 +44,81 @@ var pullUpdatePublisherCmd = &cobra.Command{
 
 		fmt.Println("Starting price oracle publisher")
 
-		config, err := config.LoadConfigFromEnv()
+		config, err := config.LoadConfig(configPath)
 		if err != nil {
 			log.Fatalf("Failed to load config: %v", err)
 			panic(err)
 		}
-		config.Verify()
 
 		fmt.Printf("Config loaded: %+v\n", config)
 
 		// Create fetcher
 		restFetcher, err := fetcher.NewRestFetcher(
-			config.FinalizeSnapshotUrl, &http.Client{},
+			config.FinalizeSnapshotURL, http.DefaultClient,
 		)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"finalizeSnapshotUrl": config.FinalizeSnapshotUrl,
+				"finalizeSnapshotUrl": config.FinalizeSnapshotURL,
 			}).Fatalf("Failed to create fetcher: %v", err)
 			panic(err)
 		}
 
 		//
-		// Create transactor
+		// Create transactors
 		//
+		transactors := make([]transactor.ITransactor, 0, len(config.Networks))
 
-		client, err := ethclient.Dial(config.TargetChainUrl)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"targetChainUrl": config.TargetChainUrl,
-			}).Fatalf("Failed to dial target chain: %v", err)
-			panic(err)
-		}
+		for name, net := range config.Networks {
+			log := log.WithFields(log.Fields{
+				"network":        name,
+				"targetChainUrl": net.TargetChainURL,
+			})
 
-		chainID, err := client.ChainID(ctx)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"targetChainUrl": config.TargetChainUrl,
-			}).Fatalf("Failed to get chain ID: %v", err)
-			panic(err)
-		}
+			client, err := ethclient.Dial(net.TargetChainURL)
+			if err != nil {
+				log.Fatalf("Failed to dial target chain: %v", err)
+				panic(err)
+			}
 
-		// Load private key
-		key, err := keystore.ParseKeyFromHex(config.PrivateKey)
+			chainID, err := client.ChainID(ctx)
+			if err != nil {
+				log.Fatalf("Failed to get chain ID: %v", err)
+				panic(err)
+			}
 
-		transactor, err := transactor.NewTransactor(ctx, client, key, chainID, config.PullOracleAddress)
-		if err != nil {
-			log.Fatalf("Failed to create transactor: %v", err)
-			panic(err)
+			// Load private key
+			key, err := keystore.ParseKeyFromHex(net.PrivateKey)
+			if err != nil {
+				log.Fatalf("Failed to parse private key: %v", err)
+				panic(err)
+			}
+
+			transactor, err := transactor.NewTransactor(ctx, client, key, chainID, net.PullOracleAddress)
+			if err != nil {
+				log.Fatalf("Failed to create transactor: %v", err)
+				panic(err)
+			}
+
+			transactors = append(transactors, transactor)
 		}
 
 		// Create publisher
-		publisher := publisher.NewUpdatePublisher(transactor, restFetcher)
+		publisher := publisher.NewUpdatePublisher(transactors, restFetcher)
+
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
 
 		for {
-			// Publish latest feed
-			err := publisher.PublishUpdate()
-			if err != nil {
-				log.Errorf("Failed to publish update: %v", err)
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				// Publish latest feed
+				err := publisher.PublishUpdate()
+				if err != nil {
+					log.Errorf("Failed to publish update: %v", err)
+				}
 			}
-
-			time.Sleep(10 * time.Second)
 		}
 	},
 }
@@ -156,6 +177,7 @@ func init() {
 
 	pullUpdatePublisherCmd.PersistentFlags().IntP("verbosity", "v", 4, "Verbosity level")
 	pullUpdatePublisherCmd.PersistentFlags().Bool("lines", false, "Include line numbers in logs")
+	pullUpdatePublisherCmd.PersistentFlags().String("config", "config.yaml", "Configuration file path")
 }
 
 func main() {

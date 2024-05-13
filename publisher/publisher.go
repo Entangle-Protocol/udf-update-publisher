@@ -11,8 +11,8 @@ import (
 )
 
 type UpdatePublisher struct {
-	transactor transactor.ITransactor
-	fetcher    fetcher.IFetcher
+	transactors []transactor.ITransactor
+	fetcher     fetcher.IFetcher
 }
 
 func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) *types.MerkleRootUpdate {
@@ -38,10 +38,10 @@ func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) *types.MerkleRoo
 	}
 }
 
-func NewUpdatePublisher(transactor transactor.ITransactor, fetcher fetcher.IFetcher) *UpdatePublisher {
+func NewUpdatePublisher(transactors []transactor.ITransactor, fetcher fetcher.IFetcher) *UpdatePublisher {
 	return &UpdatePublisher{
-		transactor: transactor,
-		fetcher:    fetcher,
+		transactors: transactors,
+		fetcher:     fetcher,
 	}
 }
 
@@ -53,10 +53,12 @@ func (up *UpdatePublisher) PublishUpdate() error {
 	}
 
 	update := NewMerkleUpdateFromProof(proofs)
-	err = up.transactor.SendUpdate(update)
-	if err != nil {
-		log.Errorf("Failed to send update: %v", err)
-		return err
+
+	for _, transactor := range up.transactors {
+		if err := transactor.SendUpdate(update); err != nil {
+			log.Errorf("Failed to send update: %v", err)
+			return err
+		}
 	}
 
 	log.Infof("Got feed proofs: %+v", proofs)
