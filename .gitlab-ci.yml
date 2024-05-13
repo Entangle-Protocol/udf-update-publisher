@@ -27,6 +27,9 @@ dev_test:
   #     - test-report.json
   #     - coverage.out
   #   expire_in: 1 hour
+  only:
+    changes:
+      - **/*.go
   tags:
     - docker
 
