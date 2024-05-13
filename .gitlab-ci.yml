@@ -27,9 +27,9 @@ dev_test:
   #     - test-report.json
   #     - coverage.out
   #   expire_in: 1 hour
-  only:
-    changes:
-      - /*.go
+  # only:
+  #   changes:
+  #     - /*.go
   tags:
     - docker
 
@@ -44,6 +44,8 @@ push_to_aws:
   stage: push
   script:
     - docker push 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 
+  only:
+    - main
   tags:
     - linux
 
@@ -61,4 +63,6 @@ deploy_pull-update-publisher:
     - python3 ci-scripts/awx_call.py https://awx.ent-dx.com/api/v2/job_templates/112/launch/ $AWX_TOKEN script_target:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
   tags:
     - linux
+  only:
+    - main
   when: manual
