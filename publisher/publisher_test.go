@@ -1,11 +1,13 @@
 package publisher
 
 import (
-	"github.com/brianvoe/gofakeit/v7"
-	"github.com/stretchr/testify/assert"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/stretchr/testify/assert"
+
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/transactor"
 
 	mockFetcher "gitlab.ent-dx.com/entangle/pull-update-publisher/mocks/gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
 	mockTransactor "gitlab.ent-dx.com/entangle/pull-update-publisher/mocks/gitlab.ent-dx.com/entangle/pull-update-publisher/transactor"
@@ -18,18 +20,24 @@ func TestPublishUpdate(t *testing.T) {
 	// Generate test proofs and set mocker rv to return them
 	var feedProofs fetcher.EntangleFeedProof
 	err := gofakeit.Struct(&feedProofs)
+	assert.Nil(t, err)
+
 	fetcherMock.On("GetFeedProofs").Return(&feedProofs, nil)
 
-	transactorMock := mockTransactor.NewMockITransactor(t)
+	transactorMock1 := mockTransactor.NewMockITransactor(t)
+	transactorMock2 := mockTransactor.NewMockITransactor(t)
+
 	merkleUpdate := NewMerkleUpdateFromProof(&feedProofs)
-	transactorMock.On("SendUpdate", merkleUpdate).Return(nil)
+	transactorMock1.On("SendUpdate", merkleUpdate).Return(nil)
+	transactorMock2.On("SendUpdate", merkleUpdate).Return(nil)
 
 	// Create publisher and call PublishUpdate
-	publisher := NewUpdatePublisher(transactorMock, fetcherMock)
+	publisher := NewUpdatePublisher([]transactor.ITransactor{transactorMock1, transactorMock2}, fetcherMock)
 	err = publisher.PublishUpdate()
 	assert.Nil(t, err)
 
-	assert.True(t, transactorMock.AssertExpectations(t))
+	assert.True(t, transactorMock1.AssertExpectations(t))
+	assert.True(t, transactorMock2.AssertExpectations(t))
 }
 
 func TestNewMerkleUpdateFromProof(t *testing.T) {

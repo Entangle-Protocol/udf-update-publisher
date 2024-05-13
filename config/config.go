@@ -4,51 +4,69 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/kelseyhightower/envconfig"
+	"gopkg.in/yaml.v3"
 )
 
+var regex = regexp.MustCompile(`^0x[a-fA-F0-9]{64}$`)
+
 type AppConfig struct {
-	FinalizeSnapshotUrl string         `envconfig:"FINALIZE_SNAPSHOT_URL" required:"true"`
-	TargetChainUrl      string         `envconfig:"TARGET_CHAIN_URL" required:"true"`
-	PullOracleAddress   common.Address `envconfig:"PULL_ORACLE_ADDRESS" required:"true"`
-	PrivateKey          string         `envconfig:"PRIVATE_KEY" required:"true"`
+	FinalizeSnapshotURL string                   `yaml:"finalizeSnapshotUrl"`
+	Networks            map[string]NetworkConfig `yaml:"networks"`
+}
+
+type NetworkConfig struct {
+	TargetChainURL    string         `yaml:"targetChainUrl"`
+	PullOracleAddress common.Address `yaml:"pullOracleAddress"`
+	PrivateKey        string         `yaml:"privateKey"`
 }
 
 // This function verifies the symbolic correctness of the configuration.
 // This however does not guarantee the semantic correctness of the configuration.
 func (config AppConfig) Verify() error {
+	if len(config.Networks) == 0 {
+		return fmt.Errorf("networks are required")
+	}
+
 	// Check if URLs are valid
-	if _, err := url.ParseRequestURI(config.FinalizeSnapshotUrl); err != nil {
-		return fmt.Errorf("invalid FinalizeSnapshotUrl: %w", err)
+	if _, err := url.ParseRequestURI(config.FinalizeSnapshotURL); err != nil {
+		return fmt.Errorf("invalid FinalizeSnapshotURL: %w", err)
 	}
 
-	if _, err := url.ParseRequestURI(config.TargetChainUrl); err != nil {
-		return fmt.Errorf("invalid TargetChainUrl: %w", err)
-	}
+	for name, net := range config.Networks {
+		if _, err := url.ParseRequestURI(net.TargetChainURL); err != nil {
+			return fmt.Errorf("invalid %s TargetChainURL: %w", name, err)
+		}
 
-	// Don't need to check common.Address
-	// if common.IsHexAddress(config.PullOracleAddress.Hex()) == false { }
+		// Don't need to check common.Address
+		// if common.IsHexAddress(config.PullOracleAddress.Hex()) == false { }
 
-	// Check if PrivateKey is in the correct format (0x followed by 64 hex characters)
-	re := regexp.MustCompile(`^0x[a-fA-F0-9]{64}$`)
-	if !re.MatchString(config.PrivateKey) {
-		return errors.New("invalid PrivateKey: must be 0x[0-9a-zA-Z]{64}")
+		// Check if PrivateKey is in the correct format (0x followed by 64 hex characters)
+		if !regex.MatchString(net.PrivateKey) {
+			return errors.New("invalid PrivateKey: must be 0x[0-9a-zA-Z]{64}")
+		}
 	}
 
 	return nil
 }
 
-// LoadConfig reads environment variables and initializes an AppConfig struct.
-func LoadConfigFromEnv() (*AppConfig, error) {
-	var config AppConfig
-	if err := envconfig.Process("", &config); err != nil {
-		return nil, err
+func LoadConfig(configPath string) (*AppConfig, error) {
+	bytes, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
-	if err := config.Verify(); err != nil {
-		return nil, err
+
+	var conf AppConfig
+	if err := yaml.Unmarshal(bytes, &conf); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}
-	return &config, nil
+
+	if err := conf.Verify(); err != nil {
+		return nil, fmt.Errorf("failed config verify: %w", err)
+	}
+
+	return &conf, nil
 }

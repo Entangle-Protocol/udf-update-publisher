@@ -1,35 +1,54 @@
-package config
+package config_test
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
+
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/stretchr/testify/assert"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/require"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/config"
 )
 
 func TestLoadConfigWithCorrectEnv(t *testing.T) {
+	r := require.New(t)
+
 	// Setup environment variables
 	// finalizeSnapshotUrl := "http://localhost:3000"
+	network := "ethereum"
 	finalizeSnapshotUrl := gofakeit.URL()
 	targetChainUrl := gofakeit.URL()
-	pullOracleAddress :=  "0x5ca636af0aB140A75515Bd708E3e382aa7A70aEb"
+	pullOracleAddress := "0x5ca636af0aB140A75515Bd708E3e382aa7A70aEb"
 	privateKey := "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-	assert.Nil(t, os.Setenv("FINALIZE_SNAPSHOT_URL", finalizeSnapshotUrl))
-	assert.Nil(t, os.Setenv("TARGET_CHAIN_URL", targetChainUrl))
-	assert.Nil(t, os.Setenv("PULL_ORACLE_ADDRESS", pullOracleAddress))
-	assert.Nil(t, os.Setenv("PRIVATE_KEY", privateKey))
+
+	path := filepath.Join(os.TempDir(), "config.yaml")
+	payload := fmt.Sprintf(template, finalizeSnapshotUrl, network, targetChainUrl, pullOracleAddress, privateKey)
+	err := os.WriteFile(path, []byte(payload), os.ModePerm)
+	r.NoError(err)
 
 	// Load config
-	config, err := LoadConfigFromEnv()
-	assert.Nil(t, err)
+	config, err := config.LoadConfig(path)
+	r.NoError(err)
 
 	err = config.Verify()
-	assert.Nil(t, err)
+	r.NoError(err)
+
+	r.Len(config.Networks, 1)
+	r.NotEmpty(config.Networks[network])
 
 	// Assert config values
-	assert.Equal(t, config.FinalizeSnapshotUrl, finalizeSnapshotUrl)
-	assert.Equal(t, config.TargetChainUrl, targetChainUrl)
-	assert.Equal(t, config.PullOracleAddress, common.HexToAddress(pullOracleAddress))
-	assert.Equal(t, config.PrivateKey, privateKey)
+	r.Equal(finalizeSnapshotUrl, config.FinalizeSnapshotURL)
+	r.Equal(targetChainUrl, config.Networks[network].TargetChainURL)
+	r.Equal(pullOracleAddress, config.Networks[network].PullOracleAddress.String())
+	r.Equal(privateKey, config.Networks[network].PrivateKey)
 }
+
+var template = `
+finalizeSnapshotUrl: %s
+networks:
+  %s:
+    targetChainUrl: %s
+    pullOracleAddress: %s
+    privateKey: %s
+`
