@@ -33,8 +33,7 @@ versioning and prepare:
 dev_build:
   stage: container_build
   script:
-    # - docker build -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
-    - docker build -f ./docker/Dockerfile.publisher -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher-keys:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
+    - docker build -f ./docker/Dockerfile.publisher -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
   tags:
     - linux
 
@@ -42,14 +41,13 @@ push_to_aws:
   stage: push
   script:
     - docker push 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 
-    - docker push 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher-keys:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
   tags:
     - linux
 
 clean_up_image:
   stage: clean_up
   script:
-    - docker rmi 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher-keys:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID -f
+    - docker rmi 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID -f
   tags:
     - linux
 
