@@ -46,6 +46,7 @@ push_to_aws:
     - docker push 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 
   only:
     - main
+    - dev
   tags:
     - linux
 
@@ -65,4 +66,5 @@ deploy_pull-update-publisher:
     - linux
   only:
     - main
+    - dev
   when: manual
