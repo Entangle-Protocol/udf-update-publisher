@@ -15,6 +15,7 @@ type ECDSASignature struct {
 
 // Type that aggregates argument fields that gets passed to PullOracle
 type MerkleRootUpdate struct {
+	DataKey       [32]byte
 	NewMerkleRoot [32]byte
 	MerkleProof   [][32]byte
 	Signatures    []ECDSASignature

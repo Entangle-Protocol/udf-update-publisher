@@ -302,6 +302,11 @@
             "type":"tuple[]"
          },
          {
+            "internalType":"bytes32",
+            "name":"dataKey",
+            "type":"bytes32"
+         },
+         {
             "internalType":"uint256",
             "name":"price",
             "type":"uint256"
@@ -408,28 +413,22 @@
    },
    {
       "inputs":[
-         
-      ],
-      "name":"latestPrice",
-      "outputs":[
          {
-            "internalType":"uint256",
-            "name":"",
-            "type":"uint256"
+            "internalType":"bytes32",
+            "name":"dataKey",
+            "type":"bytes32"
          }
       ],
-      "stateMutability":"view",
-      "type":"function"
-   },
-   {
-      "inputs":[
-         
-      ],
-      "name":"latestTimestamp",
+      "name":"latestUpdate",
       "outputs":[
          {
             "internalType":"uint256",
-            "name":"",
+            "name":"latestPrice",
+            "type":"uint256"
+         },
+         {
+            "internalType":"uint256",
+            "name":"latestTimestamp",
             "type":"uint256"
          }
       ],

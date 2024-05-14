@@ -8,6 +8,7 @@ import (
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/transactor"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/utils"
 )
 
 type UpdatePublisher struct {
@@ -15,7 +16,7 @@ type UpdatePublisher struct {
 	fetcher     fetcher.IFetcher
 }
 
-func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) *types.MerkleRootUpdate {
+func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) (*types.MerkleRootUpdate, error) {
 	merkleProof := make([][32]byte, len(proof.MerkleProofs))
 	for i, proof := range proof.MerkleProofs {
 		copy(merkleProof[i][:], proof)
@@ -29,13 +30,20 @@ func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) *types.MerkleRoo
 		}
 	}
 
+	dataKey, err := utils.AsciiToPaddedHex(proof.Key)
+	if err != nil {
+		log.Errorf("Failed to convert key to padded hex dataKey: %v", err)
+		return nil, err
+	}
+
 	return &types.MerkleRootUpdate{
+		DataKey:       dataKey,
 		NewMerkleRoot: proof.MerkleRoot,
 		MerkleProof:   merkleProof,
 		Signatures:    signatures,
 		Price:         big.NewInt(0).SetBytes(proof.Value.PriceData),
 		Timestamp:     big.NewInt(proof.Value.Timestamp),
-	}
+	}, nil
 }
 
 func NewUpdatePublisher(transactors []transactor.ITransactor, fetcher fetcher.IFetcher) *UpdatePublisher {
@@ -52,7 +60,11 @@ func (up *UpdatePublisher) PublishUpdate() error {
 		return err
 	}
 
-	update := NewMerkleUpdateFromProof(proofs)
+	update, err := NewMerkleUpdateFromProof(proofs)
+	if err != nil {
+		log.Errorf("Failed to create merkle update from proof: %v", err)
+		return err
+	}
 
 	for _, transactor := range up.transactors {
 		if err := transactor.SendUpdate(update); err != nil {
