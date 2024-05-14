@@ -98,6 +98,7 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 		update.NewMerkleRoot,
 		update.MerkleProof,
 		signatures,
+		update.DataKey,
 		update.Price,
 		update.Timestamp,
 	)

@@ -2,6 +2,7 @@ package publisher
 
 import (
 	"testing"
+	"bytes"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +28,8 @@ func TestPublishUpdate(t *testing.T) {
 	transactorMock1 := mockTransactor.NewMockITransactor(t)
 	transactorMock2 := mockTransactor.NewMockITransactor(t)
 
-	merkleUpdate := NewMerkleUpdateFromProof(&feedProofs)
+	merkleUpdate, err := NewMerkleUpdateFromProof(&feedProofs)
+	assert.Nil(t, err)
 	transactorMock1.On("SendUpdate", merkleUpdate).Return(nil)
 	transactorMock2.On("SendUpdate", merkleUpdate).Return(nil)
 
@@ -45,7 +47,10 @@ func TestNewMerkleUpdateFromProof(t *testing.T) {
 	err := gofakeit.Struct(&feedProofs)
 	assert.Nil(t, err)
 
-	merkleUpdate := NewMerkleUpdateFromProof(&feedProofs)
+	merkleUpdate, err := NewMerkleUpdateFromProof(&feedProofs)
+	assert.Nil(t, err)
+	recoveredDataKey := string(bytes.TrimRight(merkleUpdate.DataKey[:], "\x00"))
+	assert.Equal(t, feedProofs.Key, recoveredDataKey)
 	assert.Equal(t, feedProofs.MerkleRoot.Bytes(), merkleUpdate.NewMerkleRoot[:])
 	assert.Equal(t, len(feedProofs.MerkleProofs), len(merkleUpdate.MerkleProof))
 	for i, proof := range feedProofs.MerkleProofs {
