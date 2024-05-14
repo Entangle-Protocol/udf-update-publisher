@@ -18,12 +18,20 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	// finalizeSnapshotUrl := "http://localhost:3000"
 	network := "ethereum"
 	finalizeSnapshotUrl := gofakeit.URL()
+	assetKey := "NGL/USDT"
 	targetChainUrl := gofakeit.URL()
 	pullOracleAddress := "0x5ca636af0aB140A75515Bd708E3e382aa7A70aEb"
 	privateKey := "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 
 	path := filepath.Join(os.TempDir(), "config.yaml")
-	payload := fmt.Sprintf(template, finalizeSnapshotUrl, network, targetChainUrl, pullOracleAddress, privateKey)
+	payload := fmt.Sprintf(template,
+		finalizeSnapshotUrl,
+		assetKey,
+		network,
+		targetChainUrl,
+		pullOracleAddress,
+		privateKey,
+	)
 	err := os.WriteFile(path, []byte(payload), os.ModePerm)
 	r.NoError(err)
 
@@ -36,9 +44,11 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 
 	r.Len(config.Networks, 1)
 	r.NotEmpty(config.Networks[network])
+	r.NotEmpty(config.DataKeys)
 
 	// Assert config values
 	r.Equal(finalizeSnapshotUrl, config.FinalizeSnapshotURL)
+	r.Equal(assetKey, config.DataKeys[0])
 	r.Equal(targetChainUrl, config.Networks[network].TargetChainURL)
 	r.Equal(pullOracleAddress, config.Networks[network].PullOracleAddress.String())
 	r.Equal(privateKey, config.Networks[network].PrivateKey)
@@ -46,6 +56,8 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 
 var template = `
 finalizeSnapshotUrl: %s
+dataKeys:
+  - %s
 networks:
   %s:
     targetChainUrl: %s

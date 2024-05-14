@@ -1,5 +1,7 @@
 finalizeSnapshotUrl: http://localhost:3000
-
+dataKeys:
+  - NGL/USDT
+  
 networks:
   ethereum:
     targetChainUrl: http://localhost:3000

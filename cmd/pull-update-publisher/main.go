@@ -53,15 +53,9 @@ var pullUpdatePublisherCmd = &cobra.Command{
 		fmt.Printf("Config loaded: %+v\n", config)
 
 		// Create fetcher
-		restFetcher, err := fetcher.NewRestFetcher(
-			config.FinalizeSnapshotURL, http.DefaultClient,
+		restFetcher := fetcher.NewRestFetcher(
+			http.DefaultClient, config.FinalizeSnapshotURL,
 		)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"finalizeSnapshotUrl": config.FinalizeSnapshotURL,
-			}).Fatalf("Failed to create fetcher: %v", err)
-			panic(err)
-		}
 
 		//
 		// Create transactors
@@ -103,7 +97,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 		}
 
 		// Create publisher
-		publisher := publisher.NewUpdatePublisher(transactors, restFetcher)
+		publisher := publisher.NewUpdatePublisher(transactors, restFetcher, config.DataKeys)
 
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
@@ -114,7 +108,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 				return
 			case <-ticker.C:
 				// Publish latest feed
-				err := publisher.PublishUpdate()
+				err := publisher.PublishUpdate(ctx)
 				if err != nil {
 					log.Errorf("Failed to publish update: %v", err)
 				}

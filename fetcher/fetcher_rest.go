@@ -1,56 +1,61 @@
 package fetcher
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
-	"path"
-
-	"github.com/ethereum/go-ethereum/common"
-	log "github.com/sirupsen/logrus"
 )
 
-type HashEncodedSignatureDoc struct {
-	R common.Hash
-	S common.Hash
-	V byte
-}
-
-const GetAssetDataUriPath = "/getAssetData"
-
-type FinalizedDataDoc struct {
-	Timestamp int64  `bson:"timestamp"`
-	PriceData []byte `bson:"priceData"`
-}
-
-// FeedProof holds the latest feed proof. Matches the schema from finalized-data-snapshot backend API
-type EntangleFeedProof struct {
-	MerkleRoot   common.Hash               `json:"merkleRoot"`
-	Signatures   []HashEncodedSignatureDoc `json:"signatures"`
-	MerkleProofs [][]byte                  `json:"merkleProofs"`
-	Key          string                    `json:"key"`
-	Value        FinalizedDataDoc          `json:"value"`
-}
+const getAssetDataUriPath = "/getAssetData"
 
 type RestFetcher struct {
+	finalizedSnapshotUrl string
 	client               *http.Client
-	FinalizedSnapshotUrl string
 }
 
 func NewRestFetcher(
-	finalizedSnapshotUrl string,
 	client *http.Client,
-) (*RestFetcher, error) {
+	finalizedSnapshotUrl string,
+) *RestFetcher {
 	return &RestFetcher{
 		client:               client,
-		FinalizedSnapshotUrl: finalizedSnapshotUrl,
-	}, nil
+		finalizedSnapshotUrl: finalizedSnapshotUrl,
+	}
 }
 
-func (r *RestFetcher) GetFeedProofs() (*EntangleFeedProof, error) {
-	resp, err := r.client.Get(path.Join(r.FinalizedSnapshotUrl, GetAssetDataUriPath))
+func (r *RestFetcher) GetFeedProofs(ctx context.Context, assetKey string) (*EntangleFeedProof, error) {
+	url := r.finalizedSnapshotUrl + getAssetDataUriPath + "?assetKey=" + assetKey
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Infof("Got response: %v", resp)
-	return nil, nil
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		var proof EntangleFeedProof
+		if err := json.NewDecoder(resp.Body).Decode(&proof); err != nil {
+			return nil, err
+		}
+
+		return &proof, nil
+	default:
+		type getAssetDataError struct {
+			Error string `json:"error"`
+		}
+
+		var dataError getAssetDataError
+		if err := json.NewDecoder(resp.Body).Decode(&dataError); err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to get feed proofs: %v", dataError.Error)
+	}
 }

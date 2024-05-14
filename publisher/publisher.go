@@ -1,6 +1,7 @@
 package publisher
 
 import (
+	"context"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -12,6 +13,7 @@ import (
 )
 
 type UpdatePublisher struct {
+	dataKeys    []string
 	transactors []transactor.ITransactor
 	fetcher     fetcher.IFetcher
 }
@@ -46,34 +48,37 @@ func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) (*types.MerkleRo
 	}, nil
 }
 
-func NewUpdatePublisher(transactors []transactor.ITransactor, fetcher fetcher.IFetcher) *UpdatePublisher {
+func NewUpdatePublisher(transactors []transactor.ITransactor, fetcher fetcher.IFetcher, dataKeys []string) *UpdatePublisher {
 	return &UpdatePublisher{
+		dataKeys:    dataKeys,
 		transactors: transactors,
 		fetcher:     fetcher,
 	}
 }
 
-func (up *UpdatePublisher) PublishUpdate() error {
-	proofs, err := up.fetcher.GetFeedProofs()
-	if err != nil {
-		log.Errorf("Failed to get feed proofs: %v", err)
-		return err
-	}
-
-	update, err := NewMerkleUpdateFromProof(proofs)
-	if err != nil {
-		log.Errorf("Failed to create merkle update from proof: %v", err)
-		return err
-	}
-
-	for _, transactor := range up.transactors {
-		if err := transactor.SendUpdate(update); err != nil {
-			log.Errorf("Failed to send update: %v", err)
+func (up *UpdatePublisher) PublishUpdate(ctx context.Context) error {
+	for _, dataKey := range up.dataKeys {
+		proofs, err := up.fetcher.GetFeedProofs(ctx, dataKey)
+		if err != nil {
+			log.Errorf("Failed to get feed proofs: %v", err)
 			return err
 		}
-	}
 
-	log.Infof("Got feed proofs: %+v", proofs)
+		update, err := NewMerkleUpdateFromProof(proofs)
+		if err != nil {
+			log.Errorf("Failed to create merkle update from proof: %v", err)
+			return err
+		}
+
+		for _, transactor := range up.transactors {
+			if err := transactor.SendUpdate(update); err != nil {
+				log.Errorf("Failed to send update: %v", err)
+				return err
+			}
+		}
+
+		log.Infof("Got feed proofs: %+v", proofs)
+	}
 
 	return nil
 }
