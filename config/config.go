@@ -15,6 +15,7 @@ var regex = regexp.MustCompile(`^0x[a-fA-F0-9]{64}$`)
 
 type AppConfig struct {
 	FinalizeSnapshotURL string                   `yaml:"finalizeSnapshotUrl"`
+	DataKeys            []string                 `yaml:"dataKeys"`
 	Networks            map[string]NetworkConfig `yaml:"networks"`
 }
 
@@ -29,6 +30,10 @@ type NetworkConfig struct {
 func (config AppConfig) Verify() error {
 	if len(config.Networks) == 0 {
 		return fmt.Errorf("networks are required")
+	}
+
+	if len(config.DataKeys) == 0 {
+		return fmt.Errorf("data keys are required")
 	}
 
 	// Check if URLs are valid

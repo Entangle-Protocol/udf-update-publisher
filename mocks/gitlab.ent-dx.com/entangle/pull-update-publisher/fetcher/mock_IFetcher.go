@@ -3,6 +3,8 @@
 package fetcher
 
 import (
+	context "context"
+
 	mock "github.com/stretchr/testify/mock"
 	fetcher "gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
 )
@@ -20,9 +22,9 @@ func (_m *MockIFetcher) EXPECT() *MockIFetcher_Expecter {
 	return &MockIFetcher_Expecter{mock: &_m.Mock}
 }
 
-// GetFeedProofs provides a mock function with given fields:
-func (_m *MockIFetcher) GetFeedProofs() (*fetcher.EntangleFeedProof, error) {
-	ret := _m.Called()
+// GetFeedProofs provides a mock function with given fields: ctx, assetKey
+func (_m *MockIFetcher) GetFeedProofs(ctx context.Context, assetKey string) (*fetcher.EntangleFeedProof, error) {
+	ret := _m.Called(ctx, assetKey)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetFeedProofs")
@@ -30,19 +32,19 @@ func (_m *MockIFetcher) GetFeedProofs() (*fetcher.EntangleFeedProof, error) {
 
 	var r0 *fetcher.EntangleFeedProof
 	var r1 error
-	if rf, ok := ret.Get(0).(func() (*fetcher.EntangleFeedProof, error)); ok {
-		return rf()
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*fetcher.EntangleFeedProof, error)); ok {
+		return rf(ctx, assetKey)
 	}
-	if rf, ok := ret.Get(0).(func() *fetcher.EntangleFeedProof); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context, string) *fetcher.EntangleFeedProof); ok {
+		r0 = rf(ctx, assetKey)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*fetcher.EntangleFeedProof)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, assetKey)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,13 +58,15 @@ type MockIFetcher_GetFeedProofs_Call struct {
 }
 
 // GetFeedProofs is a helper method to define mock.On call
-func (_e *MockIFetcher_Expecter) GetFeedProofs() *MockIFetcher_GetFeedProofs_Call {
-	return &MockIFetcher_GetFeedProofs_Call{Call: _e.mock.On("GetFeedProofs")}
+//   - ctx context.Context
+//   - assetKey string
+func (_e *MockIFetcher_Expecter) GetFeedProofs(ctx interface{}, assetKey interface{}) *MockIFetcher_GetFeedProofs_Call {
+	return &MockIFetcher_GetFeedProofs_Call{Call: _e.mock.On("GetFeedProofs", ctx, assetKey)}
 }
 
-func (_c *MockIFetcher_GetFeedProofs_Call) Run(run func()) *MockIFetcher_GetFeedProofs_Call {
+func (_c *MockIFetcher_GetFeedProofs_Call) Run(run func(ctx context.Context, assetKey string)) *MockIFetcher_GetFeedProofs_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -72,7 +76,7 @@ func (_c *MockIFetcher_GetFeedProofs_Call) Return(_a0 *fetcher.EntangleFeedProof
 	return _c
 }
 
-func (_c *MockIFetcher_GetFeedProofs_Call) RunAndReturn(run func() (*fetcher.EntangleFeedProof, error)) *MockIFetcher_GetFeedProofs_Call {
+func (_c *MockIFetcher_GetFeedProofs_Call) RunAndReturn(run func(context.Context, string) (*fetcher.EntangleFeedProof, error)) *MockIFetcher_GetFeedProofs_Call {
 	_c.Call.Return(run)
 	return _c
 }

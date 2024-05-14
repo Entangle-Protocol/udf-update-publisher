@@ -1,8 +1,9 @@
 package publisher
 
 import (
-	"testing"
 	"bytes"
+	"context"
+	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,7 @@ import (
 )
 
 func TestPublishUpdate(t *testing.T) {
+	ctx := context.Background()
 	fetcherMock := mockFetcher.NewMockIFetcher(t)
 
 	// Generate test proofs and set mocker rv to return them
@@ -23,7 +25,8 @@ func TestPublishUpdate(t *testing.T) {
 	err := gofakeit.Struct(&feedProofs)
 	assert.Nil(t, err)
 
-	fetcherMock.On("GetFeedProofs").Return(&feedProofs, nil)
+	dataKey := "NGL/USDT"
+	fetcherMock.On("GetFeedProofs", ctx, dataKey).Return(&feedProofs, nil)
 
 	transactorMock1 := mockTransactor.NewMockITransactor(t)
 	transactorMock2 := mockTransactor.NewMockITransactor(t)
@@ -34,8 +37,8 @@ func TestPublishUpdate(t *testing.T) {
 	transactorMock2.On("SendUpdate", merkleUpdate).Return(nil)
 
 	// Create publisher and call PublishUpdate
-	publisher := NewUpdatePublisher([]transactor.ITransactor{transactorMock1, transactorMock2}, fetcherMock)
-	err = publisher.PublishUpdate()
+	publisher := NewUpdatePublisher([]transactor.ITransactor{transactorMock1, transactorMock2}, fetcherMock, []string{dataKey})
+	err = publisher.PublishUpdate(ctx)
 	assert.Nil(t, err)
 
 	assert.True(t, transactorMock1.AssertExpectations(t))
