@@ -10,7 +10,6 @@ import (
 
 // ParseKeyFromHex parses a private key from a hex string
 func ParseKeyFromHex(privateKeyHex string) (*ecdsa.PrivateKey, error) {
-
 	// Decode hex to bytes
 	privateKeyBytes, err := hexutil.Decode(privateKeyHex)
 	if err != nil {

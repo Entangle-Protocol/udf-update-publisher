@@ -3,10 +3,11 @@ package transactor
 import (
 	"context"
 	"fmt"
-	"github.com/brianvoe/gofakeit/v7"
-	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
+
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/stretchr/testify/assert"
 
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/keystore"
@@ -39,7 +40,7 @@ func TestSendUpdate(t *testing.T) {
 
 	testAddr := ethcommon.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
 	backend := simTestBackend(testAddr)
-	defer func () {
+	defer func() {
 		err := backend.Close()
 		assert.Nil(t, err)
 	}()
