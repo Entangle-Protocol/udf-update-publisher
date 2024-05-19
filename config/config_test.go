@@ -20,7 +20,7 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	finalizeSnapshotUrl := gofakeit.URL()
 	assetKey := "NGL/USDT"
 	targetChainUrl := gofakeit.URL()
-	pullOracleAddress := "0x5ca636af0aB140A75515Bd708E3e382aa7A70aEb"
+	pullOracleAddress := "0x9EeF2FA023ADbfe260EC8164BAfB454ffEF3E2bd"
 	privateKey := "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 
 	path := filepath.Join(os.TempDir(), "config.yaml")

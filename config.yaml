@@ -5,5 +5,5 @@ dataKeys:
 networks:
   ethereum:
     targetChainUrl: http://localhost:3000
-    pullOracleAddress: 0x5ca636af0aB140A75515Bd708E3e382aa7A70aEb
+    pullOracleAddress: 0x9EeF2FA023ADbfe260EC8164BAfB454ffEF3E2bd
     privateKey: 0xdf5df25d9aa4a57e7313cb7a0a8be35cb53dcc59f206748027cca3c9b8b6520a
