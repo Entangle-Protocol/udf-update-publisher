@@ -20,6 +20,6 @@ type HashEncodedSignatureDoc struct {
 }
 
 type FinalizedDataDoc struct {
-	Timestamp int64
-	PriceData []byte
+	Timestamp int64  `json:"timestamp"`
+	PriceData []byte `json:"data"`
 }
