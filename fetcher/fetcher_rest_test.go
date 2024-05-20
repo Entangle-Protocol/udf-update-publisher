@@ -27,10 +27,14 @@ func Test_GetFeedProofs_Rest(t *testing.T) {
 	}{
 		{
 			desc:     "Valid",
-			assetKey: "some-key",
+			assetKey: "NGL/USDT",
 			handler: func(w http.ResponseWriter, req *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				json.NewEncoder(w).Encode(&feedProofs)
+				m := map[string]any{
+					"calldata": feedProofs,
+					"error":    "",
+				}
+				json.NewEncoder(w).Encode(&m)
 			},
 			wantErr: false,
 		},

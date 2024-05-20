@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
-const getAssetDataUriPath = "/getAssetData"
+const getAssetDataUriPath = "/asset"
 
 type RestFetcher struct {
 	finalizedSnapshotUrl string
@@ -25,7 +26,10 @@ func NewRestFetcher(
 }
 
 func (r *RestFetcher) GetFeedProofs(ctx context.Context, assetKey string) (*EntangleFeedProof, error) {
-	url := r.finalizedSnapshotUrl + getAssetDataUriPath + "?assetKey=" + assetKey
+	url, err := url.JoinPath(r.finalizedSnapshotUrl, getAssetDataUriPath, assetKey)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -41,12 +45,16 @@ func (r *RestFetcher) GetFeedProofs(ctx context.Context, assetKey string) (*Enta
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		var proof EntangleFeedProof
-		if err := json.NewDecoder(resp.Body).Decode(&proof); err != nil {
+		type result struct {
+			Calldata *EntangleFeedProof `json:"calldata"`
+		}
+
+		var res result
+		if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 			return nil, err
 		}
 
-		return &proof, nil
+		return res.Calldata, nil
 	default:
 		type getAssetDataError struct {
 			Error string `json:"error"`
