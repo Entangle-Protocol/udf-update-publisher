@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
@@ -40,7 +41,7 @@ func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) (*types.MerkleRo
 
 	return &types.MerkleRootUpdate{
 		DataKey:       dataKey,
-		NewMerkleRoot: proof.MerkleRoot,
+		NewMerkleRoot: common.BytesToHash(proof.MerkleRoot),
 		MerkleProof:   merkleProof,
 		Signatures:    signatures,
 		Price:         big.NewInt(0).SetBytes(proof.Value.PriceData),

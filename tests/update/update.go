@@ -160,7 +160,7 @@ func GenerateProof(privKey *ecdsa.PrivateKey, asset string) (*fetcher.EntangleFe
 
 	return &fetcher.EntangleFeedProof{
 		Key:          asset,
-		MerkleRoot:   common.BytesToHash(tree.Root),
+		MerkleRoot:   tree.Root,
 		MerkleProofs: tree.Proofs[0].Siblings,
 		Signatures: []fetcher.HashEncodedSignatureDoc{
 			{

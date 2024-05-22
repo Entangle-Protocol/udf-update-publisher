@@ -8,12 +8,10 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/stretchr/testify/require"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
-	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/keystore"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/tests/deploy"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/tests/update"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
-	"gitlab.ent-dx.com/entangle/pull-update-publisher/utils"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -110,33 +108,4 @@ func TestSendUpdate(t *testing.T) {
 			}
 		})
 	}
-}
-
-func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) (*types.MerkleRootUpdate, error) {
-	merkleProof := make([][32]byte, len(proof.MerkleProofs))
-	for i, proof := range proof.MerkleProofs {
-		copy(merkleProof[i][:], proof)
-	}
-	signatures := make([]types.ECDSASignature, len(proof.Signatures))
-	for i, sig := range proof.Signatures {
-		signatures[i] = types.ECDSASignature{
-			V: sig.V,
-			R: sig.R,
-			S: sig.S,
-		}
-	}
-
-	dataKey, err := utils.AsciiToPaddedHex(proof.Key)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.MerkleRootUpdate{
-		DataKey:       dataKey,
-		NewMerkleRoot: proof.MerkleRoot,
-		MerkleProof:   merkleProof,
-		Signatures:    signatures,
-		Price:         big.NewInt(0).SetBytes(proof.Value.PriceData),
-		Timestamp:     big.NewInt(proof.Value.Timestamp),
-	}, nil
 }

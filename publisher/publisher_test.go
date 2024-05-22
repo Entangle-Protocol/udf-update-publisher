@@ -54,7 +54,7 @@ func TestNewMerkleUpdateFromProof(t *testing.T) {
 	assert.Nil(t, err)
 	recoveredDataKey := string(bytes.TrimRight(merkleUpdate.DataKey[:], "\x00"))
 	assert.Equal(t, feedProofs.Key, recoveredDataKey)
-	assert.Equal(t, feedProofs.MerkleRoot.Bytes(), merkleUpdate.NewMerkleRoot[:])
+	assert.Equal(t, feedProofs.MerkleRoot, merkleUpdate.NewMerkleRoot[:])
 	assert.Equal(t, len(feedProofs.MerkleProofs), len(merkleUpdate.MerkleProof))
 	for i, proof := range feedProofs.MerkleProofs {
 		var proofBytes [32]byte
