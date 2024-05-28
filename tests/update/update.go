@@ -5,60 +5,20 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	smt "github.com/FantasyJony/openzeppelin-merkle-tree-go/standard_merkle_tree"
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/txaty/go-merkletree"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/utils"
 )
 
-type leaf struct {
-	DataKey   [32]byte
-	Price     *big.Int
-	Timestamp *big.Int
-}
-
-func (data *leaf) Serialize() ([]byte, error) {
-	uint256Type, err := abi.NewType("uint256", "uint256", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	bytes32Type, err := abi.NewType("bytes32", "bytes32", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	bytesType, err := abi.NewType("bytes", "bytes", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	arguments := abi.Arguments{
-		{
-			Type: uint256Type,
-		},
-		{
-			Type: bytesType,
-		},
-		{
-			Type: bytes32Type,
-		},
-	}
-
-	bytes, err := arguments.Pack(
-		data.Timestamp,
-		math.U256Bytes(data.Price),
-		data.DataKey,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return crypto.Keccak256(bytes), nil
+var LeafEncodings = []string{
+	smt.SOL_UINT256,
+	smt.SOL_BYTES,
+	smt.SOL_BYTES32,
 }
 
 func GenerateUpdate(privKey *ecdsa.PrivateKey, asset string) (*types.MerkleRootUpdate, error) {
@@ -70,43 +30,34 @@ func GenerateUpdate(privKey *ecdsa.PrivateKey, asset string) (*types.MerkleRootU
 	price := big.NewInt(100)
 	timestamp := big.NewInt(time.Now().Unix())
 
-	blocks := make([]merkletree.DataBlock, 0)
-	for i := 0; i < 2; i++ {
-		blocks = append(blocks, &leaf{
-			DataKey:   dataKey,
-			Price:     price,
-			Timestamp: timestamp,
-		})
-	}
+	value := []any{timestamp, math.U256Bytes(price), dataKey}
 
-	tree, err := merkletree.New(&merkletree.Config{
-		Mode:             merkletree.ModeProofGenAndTreeBuild,
-		SortSiblingPairs: true,
-		HashFunc: func(bytes []byte) ([]byte, error) {
-			return crypto.Keccak256(bytes), nil
-		},
-	}, blocks)
+	tree, err := smt.Of([][]any{value}, LeafEncodings)
 	if err != nil {
 		return nil, err
 	}
 
-	b := []byte("\x19Ethereum Signed Message:\n32")
-	res := append(common.TrimLeftZeroes(b), crypto.Keccak256(tree.Root)...)
+	res := accounts.TextHash(tree.GetRoot())
 
-	sig, err := crypto.Sign(crypto.Keccak256(res), privKey)
+	sig, err := crypto.Sign(res, privKey)
 	if err != nil {
 		return nil, err
 	}
 	sig[64] += 27
 
-	merkleProof := make([][32]byte, len(tree.Proofs[0].Siblings))
-	for i, proof := range tree.Proofs[0].Siblings {
+	proof, err := tree.GetProofWithIndex(0)
+	if err != nil {
+		return nil, err
+	}
+
+	merkleProof := make([][32]byte, len(proof))
+	for i, proof := range proof {
 		copy(merkleProof[i][:], proof)
 	}
 
 	return &types.MerkleRootUpdate{
 		DataKey:       dataKey,
-		NewMerkleRoot: [32]byte(tree.Root),
+		NewMerkleRoot: [32]byte(tree.GetRoot()),
 		MerkleProof:   merkleProof,
 		Signatures: []types.ECDSASignature{
 			{
@@ -129,39 +80,30 @@ func GenerateProof(privKey *ecdsa.PrivateKey, asset string) (*fetcher.EntangleFe
 	price := big.NewInt(100)
 	timestamp := big.NewInt(time.Now().Unix())
 
-	blocks := make([]merkletree.DataBlock, 0)
-	for i := 0; i < 2; i++ {
-		blocks = append(blocks, &leaf{
-			DataKey:   dataKey,
-			Price:     price,
-			Timestamp: timestamp,
-		})
-	}
+	value := []any{timestamp, math.U256Bytes(price), dataKey}
 
-	tree, err := merkletree.New(&merkletree.Config{
-		Mode:             merkletree.ModeProofGenAndTreeBuild,
-		SortSiblingPairs: true,
-		HashFunc: func(bytes []byte) ([]byte, error) {
-			return crypto.Keccak256(bytes), nil
-		},
-	}, blocks)
+	tree, err := smt.Of([][]any{value}, LeafEncodings)
 	if err != nil {
 		return nil, err
 	}
 
-	b := []byte("\x19Ethereum Signed Message:\n32")
-	res := append(common.TrimLeftZeroes(b), crypto.Keccak256(tree.Root)...)
+	res := accounts.TextHash(tree.GetRoot())
 
-	sig, err := crypto.Sign(crypto.Keccak256(res), privKey)
+	sig, err := crypto.Sign(res, privKey)
 	if err != nil {
 		return nil, err
 	}
 	sig[64] += 27
 
+	proof, err := tree.GetProofWithIndex(0)
+	if err != nil {
+		return nil, err
+	}
+
 	return &fetcher.EntangleFeedProof{
 		Key:          asset,
-		MerkleRoot:   tree.Root,
-		MerkleProofs: tree.Proofs[0].Siblings,
+		MerkleRoot:   tree.GetRoot(),
+		MerkleProofs: proof,
 		Signatures: []fetcher.HashEncodedSignatureDoc{
 			{
 				R: common.BytesToHash(sig[:32]),

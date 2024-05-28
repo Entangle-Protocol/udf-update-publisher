@@ -63,9 +63,9 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 	signatures := make([]PullOracle.PullOracleSignature, len(update.Signatures))
 	for i, s := range update.Signatures {
 		signatures[i] = PullOracle.PullOracleSignature{
-			V: s.V,
 			R: s.R,
 			S: s.S,
+			V: s.V,
 		}
 	}
 
