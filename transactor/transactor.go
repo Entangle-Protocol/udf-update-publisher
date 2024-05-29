@@ -143,6 +143,7 @@ func (t *Transactor) createTransactOpts(chainID *big.Int) (*bind.TransactOpts, e
 	}
 
 	opts.Nonce = big.NewInt(int64(nonce))
+	// opts.GasLimit = 500000
 
 	return opts, nil
 }

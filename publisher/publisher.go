@@ -1,7 +1,9 @@
 package publisher
 
 import (
+	"fmt"
 	"context"
+	"regexp"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -18,6 +20,8 @@ type UpdatePublisher struct {
 	transactors []transactor.ITransactor
 	fetcher     fetcher.IFetcher
 }
+
+const MerkleRootRegex = "^0x[0-9A-Fa-f]{64}$"
 
 func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) (*types.MerkleRootUpdate, error) {
 	merkleProof := make([][32]byte, len(proof.MerkleProofs))
@@ -39,9 +43,15 @@ func NewMerkleUpdateFromProof(proof *fetcher.EntangleFeedProof) (*types.MerkleRo
 		return nil, err
 	}
 
+	rootValid, _ := regexp.MatchString(MerkleRootRegex, proof.MerkleRoot)
+	if (!rootValid) {
+		log.Errorf("Failed to parse provided merkle root: %s", proof.MerkleRoot)
+		return nil, fmt.Errorf("Invalid merkle root")
+	}
+
 	return &types.MerkleRootUpdate{
 		DataKey:       dataKey,
-		NewMerkleRoot: common.BytesToHash(proof.MerkleRoot),
+		NewMerkleRoot: common.HexToHash(proof.MerkleRoot),
 		MerkleProof:   merkleProof,
 		Signatures:    signatures,
 		Price:         big.NewInt(0).SetBytes(proof.Value.PriceData),

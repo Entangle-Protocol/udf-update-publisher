@@ -24,6 +24,7 @@ func TestPublishUpdate(t *testing.T) {
 	var feedProofs fetcher.EntangleFeedProof
 	err := gofakeit.Struct(&feedProofs)
 	assert.Nil(t, err)
+	feedProofs.MerkleRoot = "0xd6e3f5da723db2bad4081e40f190076d8c579a0eac8e90703b06278b82a5e8f7"
 
 	dataKey := "NGL/USDT"
 	fetcherMock.On("GetFeedProofs", ctx, dataKey).Return(&feedProofs, nil)
@@ -49,12 +50,14 @@ func TestNewMerkleUpdateFromProof(t *testing.T) {
 	var feedProofs fetcher.EntangleFeedProof
 	err := gofakeit.Struct(&feedProofs)
 	assert.Nil(t, err)
+	feedProofs.MerkleRoot = "0xd6e3f5da723db2bad4081e40f190076d8c579a0eac8e90703b06278b82a5e8f7"
+	expectedMerkleRoot := []byte{0xd6, 0xe3, 0xf5, 0xda, 0x72, 0x3d, 0xb2, 0xba, 0xd4, 0x08, 0x1e, 0x40, 0xf1, 0x90, 0x07, 0x6d, 0x8c, 0x57, 0x9a, 0x0e, 0xac, 0x8e, 0x90, 0x70, 0x3b, 0x06, 0x27, 0x8b, 0x82, 0xa5, 0xe8, 0xf7}
 
 	merkleUpdate, err := NewMerkleUpdateFromProof(&feedProofs)
 	assert.Nil(t, err)
 	recoveredDataKey := string(bytes.TrimRight(merkleUpdate.DataKey[:], "\x00"))
 	assert.Equal(t, feedProofs.Key, recoveredDataKey)
-	assert.Equal(t, feedProofs.MerkleRoot, bytes.TrimLeft(merkleUpdate.NewMerkleRoot[:], "\x00"))
+	assert.Equal(t, expectedMerkleRoot, merkleUpdate.NewMerkleRoot[:])
 	assert.Equal(t, len(feedProofs.MerkleProofs), len(merkleUpdate.MerkleProof))
 	for i, proof := range feedProofs.MerkleProofs {
 		var proofBytes [32]byte

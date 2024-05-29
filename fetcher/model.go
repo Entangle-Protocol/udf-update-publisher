@@ -6,7 +6,7 @@ import (
 
 // FeedProof holds the latest feed proof. Matches the schema from finalized-data-snapshot backend API
 type EntangleFeedProof struct {
-	MerkleRoot   []byte                    `json:"merkleRoot"`
+	MerkleRoot   string                    `json:"merkleRoot"`
 	Signatures   []HashEncodedSignatureDoc `json:"signatures"`
 	MerkleProofs [][]byte                  `json:"merkleProofs,omitempty"`
 	Key          string                    `json:"key"`
