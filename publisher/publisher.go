@@ -74,6 +74,7 @@ func (up *UpdatePublisher) PublishUpdate(ctx context.Context) error {
 			log.Errorf("Failed to get feed proofs: %v", err)
 			return err
 		}
+		log.Infof("Got feed proofs: %+v", proofs)
 
 		update, err := NewMerkleUpdateFromProof(proofs)
 		if err != nil {
@@ -87,8 +88,6 @@ func (up *UpdatePublisher) PublishUpdate(ctx context.Context) error {
 				return err
 			}
 		}
-
-		log.Infof("Got feed proofs: %+v", proofs)
 	}
 
 	return nil
