@@ -99,7 +99,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 		// Create publisher
 		publisher := publisher.NewUpdatePublisher(transactors, restFetcher, config.DataKeys)
 
-		ticker := time.NewTicker(10 * time.Second)
+		ticker := time.NewTicker(time.Duration(config.UpdateInterval) * time.Second)
 		defer ticker.Stop()
 
 		for {

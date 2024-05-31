@@ -17,6 +17,8 @@ type AppConfig struct {
 	FinalizeSnapshotURL string                   `yaml:"finalizeSnapshotUrl"`
 	DataKeys            []string                 `yaml:"dataKeys"`
 	Networks            map[string]NetworkConfig `yaml:"networks"`
+	// Interval in seconds for publishing updates for DataKeys
+	UpdateInterval      uint                     `yaml:"updateInterval"`
 }
 
 type NetworkConfig struct {
@@ -34,6 +36,10 @@ func (config AppConfig) Verify() error {
 
 	if len(config.DataKeys) == 0 {
 		return fmt.Errorf("data keys are required")
+	}
+
+	if (config.UpdateInterval == 0) {
+		return fmt.Errorf("update interval is required")
 	}
 
 	// Check if URLs are valid
