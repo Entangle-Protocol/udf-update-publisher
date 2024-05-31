@@ -19,6 +19,7 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	network := "ethereum"
 	finalizeSnapshotUrl := gofakeit.URL()
 	assetKey := "NGL/USDT"
+	updateInterval := 30
 	targetChainUrl := gofakeit.URL()
 	pullOracleAddress := "0x9EeF2FA023ADbfe260EC8164BAfB454ffEF3E2bd"
 	privateKey := "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
@@ -27,6 +28,7 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	payload := fmt.Sprintf(template,
 		finalizeSnapshotUrl,
 		assetKey,
+		updateInterval,
 		network,
 		targetChainUrl,
 		pullOracleAddress,
@@ -58,6 +60,7 @@ var template = `
 finalizeSnapshotUrl: %s
 dataKeys:
   - %s
+updateInterval: %d
 networks:
   %s:
     targetChainUrl: %s
