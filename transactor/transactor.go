@@ -83,33 +83,34 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 			update.Timestamp,
 		)
 		if err != nil {
-			if !strings.Contains(err.Error(), "invalid nonce") {
+			if strings.Contains(err.Error(), "invalid nonce") {
+				// If the error is regarding nonce, fetch correct nonce and retry
 				log.WithFields(log.Fields{
-					"error":  err,
-					"update": update,
-				}).Error("Failed to execute PullOracle.GetLastPrice")
-				return err
+					"error": err,
+					"nonce": t.opts.Nonce,
+				}).Warn("Transactor: Invalid nonce, fetching correct nonce and retrying...")
+
+				nonce, err := t.client.PendingNonceAt(
+					t.ctx,
+					t.opts.From,
+				)
+				if err != nil {
+					log.WithError(err).Error("Transactor: Failed to fetch correct nonce")
+					return err
+				}
+
+				log.WithField("nonce", nonce).Info("Transactor: Fetched correct nonce")
+				t.opts.Nonce.Set(big.NewInt(int64(nonce)))
+
+				continue
 			}
 
-			// If the error is regarding nonce, fetch correct nonce and retry
 			log.WithFields(log.Fields{
-				"error": err,
-				"nonce": t.opts.Nonce,
-			}).Warn("Transactor: Invalid nonce, fetching correct nonce and retrying...")
+				"error":  err,
+				"update": update,
+			}).Error("Failed to execute PullOracle.GetLastPrice")
 
-			nonce, err := t.client.PendingNonceAt(
-				t.ctx,
-				t.opts.From,
-			)
-			if err != nil {
-				log.WithError(err).Error("Transactor: Failed to fetch correct nonce")
-				return err
-			}
-
-			log.WithField("nonce", nonce).Info("Transactor: Fetched correct nonce")
-			t.opts.Nonce.Set(big.NewInt(int64(nonce)))
-
-			continue
+			return err
 		}
 
 		log.WithFields(log.Fields{
