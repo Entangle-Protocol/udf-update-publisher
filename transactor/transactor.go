@@ -83,7 +83,7 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 			update.Timestamp,
 		)
 		if err != nil {
-			if strings.Contains(err.Error(), "invalid nonce") {
+			if strings.Contains(err.Error(), "invalid nonce") || strings.Contains(err.Error(), "nonce too low") {
 				// If the error is regarding nonce, fetch correct nonce and retry
 				log.WithFields(log.Fields{
 					"error": err,
