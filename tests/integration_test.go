@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -96,6 +97,7 @@ func TestPublisher_Simulate(t *testing.T) {
 	r := require.New(t)
 
 	ctx := context.Background()
+
 	client := backend.Client()
 	chainID, err := client.ChainID(ctx)
 	r.NoError(err)
@@ -105,7 +107,7 @@ func TestPublisher_Simulate(t *testing.T) {
 
 	url := "http://" + httpServer.Addr
 	fetcher := fetcher.NewRestFetcher(http.DefaultClient, url)
-	pub := publisher.NewUpdatePublisher([]transactor.ITransactor{tx}, fetcher, appConfig.DataKeys)
+	pub := publisher.NewUpdatePublisher(appConfig.Publisher, []transactor.ITransactor{tx}, fetcher, appConfig.DataKeys)
 
 	pullOracle, err := PullOracle.NewPullOracle(pullOracleAddress, client)
 	r.NoError(err)
@@ -152,7 +154,8 @@ func TestPublisher_Simulate(t *testing.T) {
 // }
 
 func getAsset(w http.ResponseWriter, r *http.Request) {
-	proof, err := update.GenerateProof(adminKey, "NGL/USDT")
+	dataKey := strings.TrimPrefix(r.RequestURI, "/asset/")
+	proof, err := update.GenerateProof(adminKey, dataKey)
 
 	m := map[string]any{
 		"calldata": proof,

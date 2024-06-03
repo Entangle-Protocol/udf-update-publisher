@@ -3,6 +3,8 @@
 package transactor
 
 import (
+	big "math/big"
+
 	mock "github.com/stretchr/testify/mock"
 
 	types "gitlab.ent-dx.com/entangle/pull-update-publisher/types"
@@ -19,6 +21,66 @@ type MockITransactor_Expecter struct {
 
 func (_m *MockITransactor) EXPECT() *MockITransactor_Expecter {
 	return &MockITransactor_Expecter{mock: &_m.Mock}
+}
+
+// LatestUpdate provides a mock function with given fields: dataKey
+func (_m *MockITransactor) LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int) {
+	ret := _m.Called(dataKey)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LatestUpdate")
+	}
+
+	var r0 *big.Int
+	var r1 *big.Int
+	if rf, ok := ret.Get(0).(func([32]byte) (*big.Int, *big.Int)); ok {
+		return rf(dataKey)
+	}
+	if rf, ok := ret.Get(0).(func([32]byte) *big.Int); ok {
+		r0 = rf(dataKey)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func([32]byte) *big.Int); ok {
+		r1 = rf(dataKey)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*big.Int)
+		}
+	}
+
+	return r0, r1
+}
+
+// MockITransactor_LatestUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LatestUpdate'
+type MockITransactor_LatestUpdate_Call struct {
+	*mock.Call
+}
+
+// LatestUpdate is a helper method to define mock.On call
+//   - dataKey [32]byte
+func (_e *MockITransactor_Expecter) LatestUpdate(dataKey interface{}) *MockITransactor_LatestUpdate_Call {
+	return &MockITransactor_LatestUpdate_Call{Call: _e.mock.On("LatestUpdate", dataKey)}
+}
+
+func (_c *MockITransactor_LatestUpdate_Call) Run(run func(dataKey [32]byte)) *MockITransactor_LatestUpdate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].([32]byte))
+	})
+	return _c
+}
+
+func (_c *MockITransactor_LatestUpdate_Call) Return(_a0 *big.Int, _a1 *big.Int) *MockITransactor_LatestUpdate_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockITransactor_LatestUpdate_Call) RunAndReturn(run func([32]byte) (*big.Int, *big.Int)) *MockITransactor_LatestUpdate_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // SendUpdate provides a mock function with given fields: update
