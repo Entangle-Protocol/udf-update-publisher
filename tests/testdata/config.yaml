@@ -1,7 +1,12 @@
 finalizeSnapshotUrl: https://pricefeed.entangle.fi
 dataKeys:
   - NGL/USDT
-updateInterval: 30  
+  - ETH/USDT
+  - BTC/USDT
+publisher:
+  updateInterval: 30 
+  updateThreshold: 1s
+  priceDiffThreshold: 100
 networks:
   eth_sepolia:
     targetChainUrl: https://ethereum-sepolia-rpc.publicnode.com

@@ -3,7 +3,10 @@ dataKeys:
   - NGL/USDT
   - ETH/USDT
   - BTC/USDT
-updateInterval: 30  
+publisher:
+  updateInterval: 30 
+  updateThreshold: 5m0s
+  priceDiffThreshold: 100
 networks:
   eth_sepolia:
     targetChainUrl: https://ethereum-sepolia-rpc.publicnode.com

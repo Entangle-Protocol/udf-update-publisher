@@ -17,6 +17,7 @@ import (
 
 type ITransactor interface {
 	SendUpdate(update *types.MerkleRootUpdate) error
+	LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int)
 }
 
 type Transactor struct {
@@ -123,6 +124,14 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 	t.opts.Nonce.Add(t.opts.Nonce, big.NewInt(1))
 
 	return nil
+}
+
+func (t *Transactor) LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int) {
+	update, err := t.pullOracle.LatestUpdate(&bind.CallOpts{}, dataKey)
+	if err != nil {
+		return big.NewInt(0), big.NewInt(0)
+	}
+	return update.LatestPrice, update.LatestTimestamp
 }
 
 func (t *Transactor) createTransactOpts(chainID *big.Int) (*bind.TransactOpts, error) {

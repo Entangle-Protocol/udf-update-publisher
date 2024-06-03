@@ -20,6 +20,8 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	finalizeSnapshotUrl := gofakeit.URL()
 	assetKey := "NGL/USDT"
 	updateInterval := 30
+	updateThreshold := "5m0s"
+	priceDiffThreshold := 1
 	targetChainUrl := gofakeit.URL()
 	pullOracleAddress := "0x9EeF2FA023ADbfe260EC8164BAfB454ffEF3E2bd"
 	privateKey := "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
@@ -29,6 +31,8 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 		finalizeSnapshotUrl,
 		assetKey,
 		updateInterval,
+		updateThreshold,
+		priceDiffThreshold,
 		network,
 		targetChainUrl,
 		pullOracleAddress,
@@ -48,19 +52,27 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	r.NotEmpty(config.Networks[network])
 	r.NotEmpty(config.DataKeys)
 
+	fmt.Printf("config: %+v\n", *config)
+
 	// Assert config values
 	r.Equal(finalizeSnapshotUrl, config.FinalizeSnapshotURL)
 	r.Equal(assetKey, config.DataKeys[0])
 	r.Equal(targetChainUrl, config.Networks[network].TargetChainURL)
 	r.Equal(pullOracleAddress, config.Networks[network].PullOracleAddress.String())
 	r.Equal(privateKey, config.Networks[network].PrivateKey)
+	r.Equal(updateInterval, int(config.Publisher.UpdateInterval))
+	r.Equal(updateThreshold, config.Publisher.UpdateThreshold.String())
+	r.Equal(priceDiffThreshold, int(config.Publisher.PriceDiffThreshold))
 }
 
 var template = `
 finalizeSnapshotUrl: %s
 dataKeys:
   - %s
-updateInterval: %d
+publisher:
+  updateInterval: %d 
+  updateThreshold: %s 
+  priceDiffThreshold: %d
 networks:
   %s:
     targetChainUrl: %s
