@@ -12,3 +12,7 @@ networks:
     targetChainUrl: https://ethereum-sepolia-rpc.publicnode.com
     pullOracleAddress: 0x9EeF2FA023ADbfe260EC8164BAfB454ffEF3E2bd
     privateKey: 0x39e1b4ee29089ac4c1918bbea6b68d96cda9146d51cbab6ceeea1ba3904ef6f0
+  mantle_sepolia:
+    targetChainUrl: https://rpc.sepolia.mantle.xyz
+    pullOracleAddress: 0x9f62148eA6971E258ac431F3c89A0Ad64640D144
+    privateKey: 0x39e1b4ee29089ac4c1918bbea6b68d96cda9146d51cbab6ceeea1ba3904ef6f0
