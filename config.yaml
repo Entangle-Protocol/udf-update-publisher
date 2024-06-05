@@ -3,6 +3,8 @@ dataKeys:
   - NGL/USDT
   - ETH/USDT
   - BTC/USDT
+  - GAS-ETH
+  - GAS-BSC
 publisher:
   updateInterval: 30 
   updateThreshold: 5m0s
