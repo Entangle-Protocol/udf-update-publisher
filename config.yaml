@@ -1,8 +1,8 @@
 finalizeSnapshotUrl: https://pricefeed.entangle.fi
 dataKeys:
-  - NGL/USDT
-  - ETH/USDT
-  - BTC/USDT
+  - NGL/USD
+  - ETH/USD
+  - BTC/USD
   - GAS-ETH
   - GAS-BSC
 publisher:
