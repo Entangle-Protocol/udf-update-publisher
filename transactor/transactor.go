@@ -22,6 +22,7 @@ type ITransactor interface {
 	SendUpdate(update *types.MerkleRootUpdate) (*ethtypes.Transaction, error)
 	SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) (*ethtypes.Transaction, error)
 	LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int)
+	ChainID() *big.Int
 }
 
 type Transactor struct {
@@ -61,6 +62,10 @@ func NewTransactor(
 	transactor.opts = opts
 
 	return transactor, nil
+}
+
+func (t *Transactor) ChainID() *big.Int {
+	return t.chainID
 }
 
 func (t *Transactor) SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) (*ethtypes.Transaction, error) {

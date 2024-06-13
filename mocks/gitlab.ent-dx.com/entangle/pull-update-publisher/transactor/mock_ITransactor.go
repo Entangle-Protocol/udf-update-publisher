@@ -24,6 +24,53 @@ func (_m *MockITransactor) EXPECT() *MockITransactor_Expecter {
 	return &MockITransactor_Expecter{mock: &_m.Mock}
 }
 
+// ChainID provides a mock function with given fields:
+func (_m *MockITransactor) ChainID() *big.Int {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for ChainID")
+	}
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func() *big.Int); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
+}
+
+// MockITransactor_ChainID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ChainID'
+type MockITransactor_ChainID_Call struct {
+	*mock.Call
+}
+
+// ChainID is a helper method to define mock.On call
+func (_e *MockITransactor_Expecter) ChainID() *MockITransactor_ChainID_Call {
+	return &MockITransactor_ChainID_Call{Call: _e.mock.On("ChainID")}
+}
+
+func (_c *MockITransactor_ChainID_Call) Run(run func()) *MockITransactor_ChainID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockITransactor_ChainID_Call) Return(_a0 *big.Int) *MockITransactor_ChainID_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockITransactor_ChainID_Call) RunAndReturn(run func() *big.Int) *MockITransactor_ChainID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // LatestUpdate provides a mock function with given fields: dataKey
 func (_m *MockITransactor) LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int) {
 	ret := _m.Called(dataKey)

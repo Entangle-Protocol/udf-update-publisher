@@ -64,7 +64,7 @@ func (up *UpdatePublisher) PublishUpdate(ctx context.Context) error {
 			log.Errorf("Failed to get feed proofs: %v", err)
 			continue
 		}
-		log.Infof("Got feed proofs: %+v", proofs)
+		log.Debugf("Got feed proofs: %+v", proofs)
 
 		update, err := NewMerkleUpdateFromProof(proofs)
 		if err != nil {
@@ -96,7 +96,7 @@ func (up *UpdatePublisher) PublishMultipleUpdate(ctx context.Context) error {
 				log.Errorf("Failed to get feed proofs: %v", err)
 				continue
 			}
-			log.Infof("Got feed proofs: %+v", proofs)
+			log.Debugf("Got feed proofs: %+v", proofs)
 
 			update, err := NewMerkleUpdateFromProof(proofs)
 			if err != nil {
@@ -117,9 +117,18 @@ func (up *UpdatePublisher) PublishMultipleUpdate(ctx context.Context) error {
 				}
 			}
 
+			// If no valid update, skip sending to this network
+			if len(validUpdates) == 0 {
+				log.Debugf("No valid updates for chainID %d", transactor.ChainID())
+				continue
+			}
+
 			multipleUpdate, err := types.NewMekrleRootUpdateMultipleFromUpdates(validUpdates)
 			if err != nil {
-				log.Errorf("Failed to create multiple update object: %v", err)
+				log.WithFields(log.Fields{
+					"error": err,
+					"chainID": transactor.ChainID(),
+				}).Errorf("Failed to create multiple update object")
 				continue
 			}
 
