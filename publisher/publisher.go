@@ -17,6 +17,7 @@ import (
 
 type UpdatePublisher struct {
 	dataKeys    []string
+	assets      []config.AssetSet
 	transactors []*updateTransactor
 	fetcher     fetcher.IFetcher
 }
@@ -36,7 +37,13 @@ type latestUpdate struct {
 	updatedAt *big.Int // as unix timestamp
 }
 
-func NewUpdatePublisher(conf config.PublisherConfig, transactors []transactor.ITransactor, fetcher fetcher.IFetcher, dataKeys []string) *UpdatePublisher {
+func NewUpdatePublisher(
+	conf config.PublisherConfig,
+	transactors []transactor.ITransactor,
+	fetcher fetcher.IFetcher,
+	dataKeys []string,
+	assets []config.AssetSet,
+) *UpdatePublisher {
 	t := make([]*updateTransactor, 0, len(transactors))
 	for _, v := range transactors {
 		t = append(t, newUpdateTransactor(conf, v))
@@ -44,6 +51,7 @@ func NewUpdatePublisher(conf config.PublisherConfig, transactors []transactor.IT
 
 	return &UpdatePublisher{
 		dataKeys:    dataKeys,
+		assets: 	 assets,
 		transactors: t,
 		fetcher:     fetcher,
 	}
@@ -77,6 +85,54 @@ func (up *UpdatePublisher) PublishUpdate(ctx context.Context) error {
 	return nil
 }
 
+func (up *UpdatePublisher) PublishMultipleUpdate(ctx context.Context) error {
+	// Publish valid updates for each asset set
+	for _, asset := range up.assets {
+
+		merkleUpdates := make([]*types.MerkleRootUpdate, 0)
+		for _, dataKey := range asset.DataKeys {
+			proofs, err := up.fetcher.GetFeedProofs(ctx, dataKey)
+			if err != nil {
+				log.Errorf("Failed to get feed proofs: %v", err)
+				continue
+			}
+			log.Infof("Got feed proofs: %+v", proofs)
+
+			update, err := NewMerkleUpdateFromProof(proofs)
+			if err != nil {
+				log.Errorf("Failed to create merkle update from proof: %v", err)
+				continue
+			}
+
+			merkleUpdates = append(merkleUpdates, update)
+		}
+
+		for _, transactor := range up.transactors {
+
+			// Select only valid updates
+			validUpdates := make([]*types.MerkleRootUpdate, 0)
+			for _, update := range merkleUpdates {
+				if err := transactor.validateUpdate(update); err == nil {
+					validUpdates = append(validUpdates, update)
+				}
+			}
+
+			multipleUpdate, err := types.NewMekrleRootUpdateMultipleFromUpdates(validUpdates)
+			if err != nil {
+				log.Errorf("Failed to create multiple update object: %v", err)
+				continue
+			}
+
+			if err := transactor.sendMultipleUpdate(multipleUpdate); err != nil {
+				log.Errorf("Failed to send multiple updates: %v", err)
+				continue
+			}
+		}
+	}
+
+	return nil
+}
+
 func newUpdateTransactor(conf config.PublisherConfig, t transactor.ITransactor) *updateTransactor {
 	return &updateTransactor{
 		ITransactor:        t,
@@ -87,12 +143,29 @@ func newUpdateTransactor(conf config.PublisherConfig, t transactor.ITransactor) 
 	}
 }
 
+func (t *updateTransactor) sendMultipleUpdate(update *types.MerkleRootUpdateMultiple) error {
+	if _, err := t.SendMultipleUpdate(update); err != nil {
+		return fmt.Errorf("failed to send multiple update: %w", err)
+	}
+
+	t.mutex.Lock()
+	for _, u := range update.UpdateData {
+		dataKey := common.BytesToHash(u.DataKey[:])
+		t.dataKeys[dataKey] = &latestUpdate{
+			price:     new(big.Int).Set(u.Price),
+			updatedAt: new(big.Int).Set(u.Timestamp),
+		}
+	}
+	t.mutex.Unlock()
+	return nil
+}
+
 func (t *updateTransactor) sendUpdate(update *types.MerkleRootUpdate) error {
 	if err := t.validateUpdate(update); err != nil {
 		return fmt.Errorf("skip update: %w", err)
 	}
 
-	if err := t.SendUpdate(update); err != nil {
+	if _, err := t.SendUpdate(update); err != nil {
 		return fmt.Errorf("failed to send update: %w", err)
 	}
 

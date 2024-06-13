@@ -5,6 +5,16 @@ dataKeys:
   - BTC/USD
   - GAS-ETH
   - GAS-BSC
+assets:
+  - sourceID: prices-feed
+    dataKeys:
+    - NGL/USD
+    - ETH/USD
+    - BTC/USD
+  - sourceID: gas-feed
+    dataKeys:
+    - GAS-ETH
+    - GAS-BSC
 publisher:
   updateInterval: 30 
   updateThreshold: 5m0s

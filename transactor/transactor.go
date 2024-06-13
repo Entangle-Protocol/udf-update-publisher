@@ -8,15 +8,19 @@ import (
 
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/utils"
 
 	// "github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
 )
 
 type ITransactor interface {
-	SendUpdate(update *types.MerkleRootUpdate) error
+	SendUpdate(update *types.MerkleRootUpdate) (*ethtypes.Transaction, error)
+	SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) (*ethtypes.Transaction, error)
 	LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int)
 }
 
@@ -59,7 +63,71 @@ func NewTransactor(
 	return transactor, nil
 }
 
-func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
+func (t *Transactor) SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) (*ethtypes.Transaction, error) {
+	updateCalldata, err := update.ToCalldata()
+	if err != nil {
+		log.WithError(err).Error("Failed to encode multiple updates into calldata")
+		return nil, err
+	}
+
+	log.WithFields(log.Fields{
+		"merkleRoot": ethcommon.Bytes2Hex(update.MerkleRoot[:]),
+		"chainID":    t.chainID,
+		"dataKeys":   utils.Map(update.UpdateData, func(u types.MultipleUpdateData) string {
+			return ethcommon.Bytes2Hex(u.DataKey[:])
+		}),
+	}).Info("Sending PullOracle.UpdateMultipleAssets tx")
+
+	var tx *ethtypes.Transaction
+	for {
+		// Send update to PullOracle contract
+		tx, err = t.pullOracle.UpdateMultipleAssets(
+			t.opts,
+			updateCalldata,
+		)
+		if err != nil {
+			if strings.Contains(err.Error(), "invalid nonce") || strings.Contains(err.Error(), "nonce too low") {
+				// If the error is regarding nonce, fetch correct nonce and retry
+				log.WithFields(log.Fields{
+					"error": err,
+					"nonce": t.opts.Nonce,
+				}).Warn("Transactor: Invalid nonce, fetching correct nonce and retrying...")
+
+				nonce, err := t.client.PendingNonceAt(
+					t.ctx,
+					t.opts.From,
+				)
+				if err != nil {
+					log.WithError(err).Error("Transactor: Failed to fetch correct nonce")
+					return nil, err
+				}
+
+				log.WithField("nonce", nonce).Info("Transactor: Fetched correct nonce")
+				t.opts.Nonce.Set(big.NewInt(int64(nonce)))
+
+				continue
+			}
+
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Error("Failed to execute PullOracle.UpdateMultipleAssets")
+
+			return nil, err
+		}
+
+		log.WithFields(log.Fields{
+			"tx": tx.Hash().Hex(),
+		}).Info("Sent update to PullOracle contract")
+
+		break
+	}
+
+	t.opts.Nonce.Add(t.opts.Nonce, big.NewInt(1))
+
+	return tx, nil
+}
+
+func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) (*ethtypes.Transaction, error) {
 	// Remap to correct type...
 	signatures := make([]PullOracle.PullOracleSignature, len(update.Signatures))
 	for i, s := range update.Signatures {
@@ -70,8 +138,12 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 		}
 	}
 
-	log.Infof("Sending update to PullOracle contract")
+	log.WithFields(log.Fields{
+		"merkleRoot": ethcommon.Bytes2Hex(update.NewMerkleRoot[:]),
+		"dataKey": ethcommon.Bytes2Hex(update.DataKey[:]),
+	}).Info("Sending PullOracle.GetLastPrice tx")
 
+	var tx *ethtypes.Transaction
 	for {
 		// Send update to PullOracle contract
 		tx, err := t.pullOracle.GetLastPrice(
@@ -97,7 +169,7 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 				)
 				if err != nil {
 					log.WithError(err).Error("Transactor: Failed to fetch correct nonce")
-					return err
+					return nil, err
 				}
 
 				log.WithField("nonce", nonce).Info("Transactor: Fetched correct nonce")
@@ -108,10 +180,9 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 
 			log.WithFields(log.Fields{
 				"error":  err,
-				"update": update,
 			}).Error("Failed to execute PullOracle.GetLastPrice")
 
-			return err
+			return nil, err
 		}
 
 		log.WithFields(log.Fields{
@@ -123,7 +194,7 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
 
 	t.opts.Nonce.Add(t.opts.Nonce, big.NewInt(1))
 
-	return nil
+	return tx, nil
 }
 
 func (t *Transactor) LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int) {

@@ -107,7 +107,7 @@ func TestPublisher_Simulate(t *testing.T) {
 
 	url := "http://" + httpServer.Addr
 	fetcher := fetcher.NewRestFetcher(http.DefaultClient, url)
-	pub := publisher.NewUpdatePublisher(appConfig.Publisher, []transactor.ITransactor{tx}, fetcher, appConfig.DataKeys)
+	pub := publisher.NewUpdatePublisher(appConfig.Publisher, []transactor.ITransactor{tx}, fetcher, appConfig.DataKeys, []config.AssetSet{})
 
 	pullOracle, err := PullOracle.NewPullOracle(pullOracleAddress, client)
 	r.NoError(err)

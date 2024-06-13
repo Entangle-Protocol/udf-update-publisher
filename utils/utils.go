@@ -15,3 +15,11 @@ func AsciiToPaddedHex(str string) ([32]byte, error) {
 
 	return ethcommon.BytesToHash(buf), nil
 }
+
+func Map[T, V any](ts []T, fn func(T) V) []V {
+    result := make([]V, len(ts))
+    for i, t := range ts {
+        result[i] = fn(t)
+    }
+    return result
+}

@@ -20,9 +20,15 @@ var (
 
 var regex = regexp.MustCompile(`^0x[a-fA-F0-9]{64}$`)
 
+type AssetSet struct {
+	SourceID string `yaml:"sourceID"`
+	DataKeys []string `yaml:"dataKeys"`
+}
+
 type AppConfig struct {
 	FinalizeSnapshotURL string                   `yaml:"finalizeSnapshotUrl"`
 	DataKeys            []string                 `yaml:"dataKeys"`
+	Assets			    []AssetSet               `yaml:"assets"`
 	Networks            map[string]NetworkConfig `yaml:"networks"`
 	Publisher           PublisherConfig          `yaml:"publisher"`
 }
