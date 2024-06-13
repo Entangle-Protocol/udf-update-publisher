@@ -97,7 +97,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 		}
 
 		// Create publisher
-		publisher := publisher.NewUpdatePublisher(config.Publisher, transactors, restFetcher, config.DataKeys)
+		publisher := publisher.NewUpdatePublisher(config.Publisher, transactors, restFetcher, config.DataKeys, config.Assets)
 
 		ticker := time.NewTicker(time.Duration(config.Publisher.UpdateInterval) * time.Second)
 		defer ticker.Stop()
@@ -108,7 +108,8 @@ var pullUpdatePublisherCmd = &cobra.Command{
 				return
 			case <-ticker.C:
 				// Publish latest feed
-				err := publisher.PublishUpdate(ctx)
+				// err := publisher.PublishUpdate(ctx)
+				err := publisher.PublishMultipleUpdate(ctx)
 				if err != nil {
 					log.Errorf("Failed to publish update: %v", err)
 				}

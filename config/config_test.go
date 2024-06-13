@@ -19,6 +19,7 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	network := "ethereum"
 	finalizeSnapshotUrl := gofakeit.URL()
 	assetKey := "NGL/USDT"
+	sourceID := "prices-feed"
 	updateInterval := 30
 	updateThreshold := "5m0s"
 	priceDiffThreshold := 1
@@ -30,6 +31,8 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 	payload := fmt.Sprintf(template,
 		finalizeSnapshotUrl,
 		assetKey,
+		sourceID,
+		assetKey,
 		updateInterval,
 		updateThreshold,
 		priceDiffThreshold,
@@ -38,6 +41,7 @@ func TestLoadConfigWithCorrectEnv(t *testing.T) {
 		pullOracleAddress,
 		privateKey,
 	)
+	fmt.Printf("payload: %s\n", payload)
 	err := os.WriteFile(path, []byte(payload), os.ModePerm)
 	r.NoError(err)
 
@@ -69,6 +73,10 @@ var template = `
 finalizeSnapshotUrl: %s
 dataKeys:
   - %s
+assets:
+  - sourceID: %s
+    dataKeys:
+    - %s
 publisher:
   updateInterval: %d 
   updateThreshold: %s 

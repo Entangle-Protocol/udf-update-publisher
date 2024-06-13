@@ -45,9 +45,9 @@ func TestPublishUpdate(t *testing.T) {
 	merkleUpdate, err := NewMerkleUpdateFromProof(proof)
 	r.NoError(err)
 
-	transactorMock1.On("SendUpdate", merkleUpdate).Return(nil)
+	transactorMock1.On("SendUpdate", merkleUpdate).Return(nil, nil)
 	transactorMock1.On("LatestUpdate", merkleUpdate.DataKey).Return(big.NewInt(0), big.NewInt(0))
-	transactorMock2.On("SendUpdate", merkleUpdate).Return(nil)
+	transactorMock2.On("SendUpdate", merkleUpdate).Return(nil, nil)
 	transactorMock2.On("LatestUpdate", merkleUpdate.DataKey).Return(big.NewInt(0), big.NewInt(0))
 
 	conf := config.PublisherConfig{
@@ -56,7 +56,7 @@ func TestPublishUpdate(t *testing.T) {
 	}
 
 	// Create publisher and call PublishUpdate
-	publisher := NewUpdatePublisher(conf, []transactor.ITransactor{transactorMock1, transactorMock2}, fetcherMock, []string{dataKey})
+	publisher := NewUpdatePublisher(conf, []transactor.ITransactor{transactorMock1, transactorMock2}, fetcherMock, []string{dataKey}, []config.AssetSet{})
 	err = publisher.PublishUpdate(ctx)
 	r.NoError(err)
 
@@ -173,7 +173,7 @@ func TestUpdateTransactor_SendUpdate(t *testing.T) {
 	r.NoError(err)
 
 	transactorMock := mockTransactor.NewMockITransactor(t)
-	transactorMock.On("SendUpdate", merkleUpdate).Return(nil)
+	transactorMock.On("SendUpdate", merkleUpdate).Return(nil, nil)
 	transactorMock.On("LatestUpdate", merkleUpdate.DataKey).Return(big.NewInt(0), big.NewInt(0))
 
 	conf := config.PublisherConfig{
