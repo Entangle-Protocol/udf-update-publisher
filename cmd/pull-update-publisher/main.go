@@ -42,7 +42,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 		}
 		SetupLogger(verbosity, enableLines)
 
-		fmt.Println("Starting price oracle publisher")
+		log.Info("Starting price oracle publisher")
 
 		config, err := config.LoadConfig(configPath)
 		if err != nil {
