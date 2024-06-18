@@ -6,12 +6,12 @@ dataKeys:
   - GAS-ETH
   - GAS-BSC
 assets:
-  - sourceID: prices-feed
+  - sourceID: prices-feed1
     dataKeys:
     - NGL/USD
     - ETH/USD
     - BTC/USD
-  - sourceID: gas-feed
+  - sourceID: gas-feed1
     dataKeys:
     - GAS-ETH
     - GAS-BSC

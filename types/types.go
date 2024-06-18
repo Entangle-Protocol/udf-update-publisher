@@ -3,8 +3,8 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
-	"math/big"
 	"fmt"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethmath "github.com/ethereum/go-ethereum/common/math"
@@ -19,7 +19,7 @@ type ECDSASignature struct {
 }
 
 func (s *ECDSASignature) ToBytes() ([]byte, error) {
-	buf := new (bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	err := binary.Write(buf, binary.BigEndian, s)
 	if err != nil {
@@ -40,10 +40,10 @@ type MerkleRootUpdate struct {
 }
 
 type MultipleUpdateData struct {
-	DataKey	   [32]byte
+	DataKey     [32]byte
 	MerkleProof [][32]byte
-	Price      *big.Int
-	Timestamp  *big.Int
+	Price       *big.Int
+	Timestamp   *big.Int
 }
 
 type MerkleRootUpdateMultiple struct {
@@ -67,10 +67,10 @@ func NewMekrleRootUpdateMultipleFromUpdates(
 		}
 
 		updateData[i] = MultipleUpdateData{
-			DataKey: update.DataKey,
+			DataKey:     update.DataKey,
 			MerkleProof: update.MerkleProof,
-			Price: update.Price,
-			Timestamp: update.Timestamp,
+			Price:       update.Price,
+			Timestamp:   update.Timestamp,
 		}
 	}
 
@@ -117,10 +117,10 @@ func NewMekrleRootUpdateMultipleFromUpdates(
 * - `merkle_proof_array` size: `merkle_proof_length * 32` bytes.
 * - `update` size: `(1 + merkle_proof_length * 32 + 32 + 32 + 32)` bytes.
 * - Total updates size: `(1 + merkle_proof_length * 32 + 96) * updates_length` bytes.
-*/
+ */
 func (up *MerkleRootUpdateMultiple) ToCalldata() ([]byte, error) {
 	// Build hex encoder
-	updateBuffer := new (bytes.Buffer)
+	updateBuffer := new(bytes.Buffer)
 
 	// Encode merkle root
 	merkleRoot := up.MerkleRoot
