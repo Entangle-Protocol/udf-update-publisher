@@ -13,8 +13,8 @@ import (
 	// "github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -78,7 +78,7 @@ func (t *Transactor) SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) 
 	log.WithFields(log.Fields{
 		"merkleRoot": ethcommon.Bytes2Hex(update.MerkleRoot[:]),
 		"chainID":    t.chainID,
-		"dataKeys":   utils.Map(update.UpdateData, func(u types.MultipleUpdateData) string {
+		"dataKeys": utils.Map(update.UpdateData, func(u types.MultipleUpdateData) string {
 			return ethcommon.Bytes2Hex(u.DataKey[:])
 		}),
 	}).Info("Sending PullOracle.UpdateMultipleAssets tx")
@@ -145,7 +145,7 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) (*ethtypes.Trans
 
 	log.WithFields(log.Fields{
 		"merkleRoot": ethcommon.Bytes2Hex(update.NewMerkleRoot[:]),
-		"dataKey": ethcommon.Bytes2Hex(update.DataKey[:]),
+		"dataKey":    ethcommon.Bytes2Hex(update.DataKey[:]),
 	}).Info("Sending PullOracle.GetLastPrice tx")
 
 	var tx *ethtypes.Transaction
@@ -184,7 +184,7 @@ func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) (*ethtypes.Trans
 			}
 
 			log.WithFields(log.Fields{
-				"error":  err,
+				"error": err,
 			}).Error("Failed to execute PullOracle.GetLastPrice")
 
 			return nil, err

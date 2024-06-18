@@ -81,6 +81,66 @@ func (_c *MockIFetcher_GetFeedProofs_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
+// GetSpotterFeedsProofs provides a mock function with given fields: ctx, spotterID, assetKeys
+func (_m *MockIFetcher) GetSpotterFeedsProofs(ctx context.Context, spotterID string, assetKeys []string) (*fetcher.EntangleFeedsProofs, error) {
+	ret := _m.Called(ctx, spotterID, assetKeys)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetSpotterFeedsProofs")
+	}
+
+	var r0 *fetcher.EntangleFeedsProofs
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, []string) (*fetcher.EntangleFeedsProofs, error)); ok {
+		return rf(ctx, spotterID, assetKeys)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, []string) *fetcher.EntangleFeedsProofs); ok {
+		r0 = rf(ctx, spotterID, assetKeys)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*fetcher.EntangleFeedsProofs)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, []string) error); ok {
+		r1 = rf(ctx, spotterID, assetKeys)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockIFetcher_GetSpotterFeedsProofs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSpotterFeedsProofs'
+type MockIFetcher_GetSpotterFeedsProofs_Call struct {
+	*mock.Call
+}
+
+// GetSpotterFeedsProofs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - spotterID string
+//   - assetKeys []string
+func (_e *MockIFetcher_Expecter) GetSpotterFeedsProofs(ctx interface{}, spotterID interface{}, assetKeys interface{}) *MockIFetcher_GetSpotterFeedsProofs_Call {
+	return &MockIFetcher_GetSpotterFeedsProofs_Call{Call: _e.mock.On("GetSpotterFeedsProofs", ctx, spotterID, assetKeys)}
+}
+
+func (_c *MockIFetcher_GetSpotterFeedsProofs_Call) Run(run func(ctx context.Context, spotterID string, assetKeys []string)) *MockIFetcher_GetSpotterFeedsProofs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].([]string))
+	})
+	return _c
+}
+
+func (_c *MockIFetcher_GetSpotterFeedsProofs_Call) Return(_a0 *fetcher.EntangleFeedsProofs, _a1 error) *MockIFetcher_GetSpotterFeedsProofs_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockIFetcher_GetSpotterFeedsProofs_Call) RunAndReturn(run func(context.Context, string, []string) (*fetcher.EntangleFeedsProofs, error)) *MockIFetcher_GetSpotterFeedsProofs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockIFetcher creates a new instance of MockIFetcher. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockIFetcher(t interface {

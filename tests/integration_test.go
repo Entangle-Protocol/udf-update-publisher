@@ -93,7 +93,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestPublisher_Simulate(t *testing.T) {
+func TestPublisher_PublishUpdate_Simulate(t *testing.T) {
 	r := require.New(t)
 
 	ctx := context.Background()
@@ -130,6 +130,47 @@ func TestPublisher_Simulate(t *testing.T) {
 	r.NotZero(info.LatestTimestamp.Int64())
 }
 
+// func TestPublisher_PublishMultipleUpdate_Simulate(t *testing.T) {
+// 	r := require.New(t)
+// 	ctx := context.Background()
+
+// 	spotterID := "prices-feed1"
+// 	assetKeys := []string{"NGL/USD", "ETH/USD", "BTC/USD"}
+
+// 	client := backend.Client()
+// 	chainID, err := client.ChainID(ctx)
+// 	r.NoError(err)
+
+// 	tx, err := transactor.NewTransactor(ctx, client, adminKey, chainID, pullOracleAddress)
+// 	r.NoError(err)
+
+// 	assetSet := config.AssetSet{SourceID: spotterID, DataKeys: assetKeys}
+
+// 	url := "https://pricefeed.entangle.fi"
+// 	fetcher := fetcher.NewRestFetcher(http.DefaultClient, url)
+// 	pub := publisher.NewUpdatePublisher(appConfig.Publisher, []transactor.ITransactor{tx}, fetcher, appConfig.DataKeys, []config.AssetSet{assetSet})
+
+// 	pullOracle, err := PullOracle.NewPullOracle(pullOracleAddress, client)
+// 	r.NoError(err)
+
+// 	dataKey, err := utils.AsciiToPaddedHex(appConfig.DataKeys[0])
+// 	r.NoError(err)
+
+// 	info, err := pullOracle.LatestUpdate(&bind.CallOpts{}, dataKey)
+// 	r.NoError(err)
+// 	r.Zero(info.LatestPrice.Int64())
+// 	r.Zero(info.LatestTimestamp.Int64())
+
+// 	err = pub.PublishMultipleUpdate(ctx)
+// 	r.NoError(err)
+// 	backend.Commit()
+
+// 	info, err = pullOracle.LatestUpdate(&bind.CallOpts{}, dataKey)
+// 	r.NoError(err)
+// 	r.NotZero(info.LatestPrice.Int64())
+// 	r.NotZero(info.LatestTimestamp.Int64())
+// }
+
 // func TestPublisher_Testnet(t *testing.T) {
 // 	r := require.New(t)
 // 	ctx := context.Background()
@@ -147,9 +188,9 @@ func TestPublisher_Simulate(t *testing.T) {
 // 	r.NoError(err)
 
 // 	fetcher := fetcher.NewRestFetcher(http.DefaultClient, appConfig.FinalizeSnapshotURL)
-// 	pub := publisher.NewUpdatePublisher([]transactor.ITransactor{tx}, fetcher, appConfig.DataKeys)
+// 	pub := publisher.NewUpdatePublisher(appConfig.Publisher, []transactor.ITransactor{tx}, fetcher, appConfig.DataKeys, appConfig.Assets)
 
-// 	err = pub.PublishUpdate(ctx)
+// 	err = pub.PublishMultipleUpdate(ctx)
 // 	r.NoError(err)
 // }
 

@@ -1,11 +1,23 @@
 finalizeSnapshotUrl: https://pricefeed.entangle.fi
 dataKeys:
-  - NGL/USDT
-  - ETH/USDT
-  - BTC/USDT
+  - NGL/USD
+  - ETH/USD
+  - BTC/USD
+  - GAS-ETH
+  - GAS-BSC
+assets:
+  - sourceID: prices-feed1
+    dataKeys:
+    - NGL/USD
+    - ETH/USD
+    - BTC/USD
+  - sourceID: gas-feed1
+    dataKeys:
+    - GAS-ETH
+    - GAS-BSC
 publisher:
   updateInterval: 30 
-  updateThreshold: 1s
+  updateThreshold: 5m0s
   priceDiffThreshold: 100
 networks:
   eth_sepolia:

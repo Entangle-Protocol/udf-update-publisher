@@ -51,7 +51,7 @@ func NewUpdatePublisher(
 
 	return &UpdatePublisher{
 		dataKeys:    dataKeys,
-		assets: 	 assets,
+		assets:      assets,
 		transactors: t,
 		fetcher:     fetcher,
 	}
@@ -88,17 +88,18 @@ func (up *UpdatePublisher) PublishUpdate(ctx context.Context) error {
 func (up *UpdatePublisher) PublishMultipleUpdate(ctx context.Context) error {
 	// Publish valid updates for each asset set
 	for _, asset := range up.assets {
+		feedsProofs, err := up.fetcher.GetSpotterFeedsProofs(ctx, asset.SourceID, asset.DataKeys)
+		if err != nil {
+			log.Errorf("Failed to get feeds proofs: %v", err)
+			continue
+		}
 
 		merkleUpdates := make([]*types.MerkleRootUpdate, 0)
-		for _, dataKey := range asset.DataKeys {
-			proofs, err := up.fetcher.GetFeedProofs(ctx, dataKey)
-			if err != nil {
-				log.Errorf("Failed to get feed proofs: %v", err)
-				continue
-			}
-			log.Debugf("Got feed proofs: %+v", proofs)
 
-			update, err := NewMerkleUpdateFromProof(proofs)
+		for _, proof := range feedsProofs.Proofs() {
+			log.Debugf("Got feed proofs: %+v", proof)
+
+			update, err := NewMerkleUpdateFromProof(proof)
 			if err != nil {
 				log.Errorf("Failed to create merkle update from proof: %v", err)
 				continue
@@ -108,7 +109,6 @@ func (up *UpdatePublisher) PublishMultipleUpdate(ctx context.Context) error {
 		}
 
 		for _, transactor := range up.transactors {
-
 			// Select only valid updates
 			validUpdates := make([]*types.MerkleRootUpdate, 0)
 			for _, update := range merkleUpdates {
@@ -126,7 +126,7 @@ func (up *UpdatePublisher) PublishMultipleUpdate(ctx context.Context) error {
 			multipleUpdate, err := types.NewMekrleRootUpdateMultipleFromUpdates(validUpdates)
 			if err != nil {
 				log.WithFields(log.Fields{
-					"error": err,
+					"error":   err,
 					"chainID": transactor.ChainID(),
 				}).Errorf("Failed to create multiple update object")
 				continue
