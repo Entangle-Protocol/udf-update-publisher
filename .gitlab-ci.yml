@@ -6,6 +6,7 @@ stages:
   - push
   - clean_up
   - deploy
+  - security-scans
 
 versioning and prepare:
   stage: versioning
@@ -68,3 +69,14 @@ deploy_pull-update-publisher:
     - main
     - dev
   when: manual
+
+security-scans:
+  stage: security-scans
+  trigger:
+    include:
+      - project: 'entangle/security'
+        ref: 'main'
+        file: '.gitlab-ci.yml'
+variables:
+  DEFECTDOJO_PRODUCTID: 12
+
