@@ -5,7 +5,7 @@ stages:
   - container_build
   - push
   - clean_up
-  - deploy
+  - deploy_testnet
 
 versioning and prepare:
   stage: versioning
@@ -57,8 +57,8 @@ clean_up_image:
   tags:
     - linux
 
-deploy_pull-update-publisher:
-  stage: deploy
+deploy_pull-update-publisher_testnet:
+  stage: deploy_testnet
   script:
     - git clone https://oauth2:$OAUTH_KEY@gitlab.ent-dx.com/devops/ci-scripts.git
     - python3 ci-scripts/awx_call.py https://awx.ent-dx.com/api/v2/job_templates/112/launch/ $AWX_TOKEN script_target:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
