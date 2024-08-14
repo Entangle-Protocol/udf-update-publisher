@@ -77,6 +77,11 @@ security-scans:
       - project: 'entangle/security'
         ref: 'main'
         file: '.gitlab-ci.yml'
+  needs: []
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - when: never    
 variables:
   DEFECTDOJO_PRODUCTID: 12
 
