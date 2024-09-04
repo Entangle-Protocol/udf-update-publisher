@@ -79,7 +79,7 @@ func (t *Transactor) SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) 
 		"merkleRoot": ethcommon.Bytes2Hex(update.MerkleRoot[:]),
 		"chainID":    t.chainID,
 		"dataKeys": utils.Map(update.UpdateData, func(u types.MultipleUpdateData) string {
-			return ethcommon.Bytes2Hex(u.DataKey[:])
+			return strings.TrimRight(string(u.DataKey[:]), "\x00")
 		}),
 	}).Info("Sending PullOracle.UpdateMultipleAssets tx")
 
