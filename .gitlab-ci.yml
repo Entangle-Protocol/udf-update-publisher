@@ -18,7 +18,7 @@ versioning and prepare:
 # Run tests
 dev_test:
   stage: build
-  image: golang:latest
+  image: golang:1.22.3-bookworm
   script:
     - go test -v ./...
     # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
