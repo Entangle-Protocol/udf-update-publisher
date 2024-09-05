@@ -16,7 +16,10 @@ COPY . .
 RUN BUILD_COMMIT=$(git rev-parse HEAD) CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags '-s -w' -o ${APP_BIN} -v ./cmd/pull-update-publisher
 
 FROM ubuntu:22.04 AS runtime
-
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 ENV APP_NAME=pull-update-publisher
 ENV APP_BIN=/bin/${APP_NAME}
 
