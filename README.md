@@ -4,7 +4,7 @@
 ## Run pull update publisher
 
 ```
-export ETNANGLE_PUBLISHER=4SxRSGMCxwJyYuAoeHKUyBT6bVYxASwhiQdV3hrfp5fFSC8sRMfb4R2UgL5UdqUFS4atWPLvXzo1mSTy9KeYKEzy
+export ETNANGLE_PUBLISHER=1TYXaYBYNuij5eHv4hrovXyMLxy7ybKPqjEYy8J8TWjAByGyxTiAwa9cvCweLVGUGbBUbnucYaE6MXYJDELdCk4
 export ENT_SOLANA_PUBLISHER_CONFIG=$(pwd)/config_solana.yml
 export RUST_LOG=info,price_publisher=debug,solana_tools=debug
 export LD_LIBRARY_PATH="."
