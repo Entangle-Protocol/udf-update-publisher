@@ -87,7 +87,7 @@ func CreateTransactors(ctx context.Context, networks map[string]config.NetworkCo
 		log := log.WithFields(log.Fields{
 			"network": name,
 		})
-		if net.Type == "nonevm" {
+		if name == "solana" {
 			log.Infof("Register solana transactor")
 			transactor, err := transactor.NewSolanaTransactor()
 			if err != nil {
@@ -95,7 +95,7 @@ func CreateTransactors(ctx context.Context, networks map[string]config.NetworkCo
 				panic(err)
 			}
 			transactors = append(transactors, transactor)
-		} else if net.Type == "evm" {
+		} else {
 			log.Infof("Register evm transactor: %s, url: %s, pull oracle: %s", name, net.TargetChainURL, net.PullOracleAddress)
 			transactor, err := CreateEVMTransactor(ctx, name, net)
 			if err != nil {

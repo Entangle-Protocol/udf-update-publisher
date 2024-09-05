@@ -78,7 +78,7 @@ func (config AppConfig) Verify() error {
 	}
 
 	for name, net := range config.Networks {
-		if net.Type == "nonevm" {
+		if name == "solana" {
 			continue
 		}
 		if _, err := url.ParseRequestURI(net.TargetChainURL); err != nil {
