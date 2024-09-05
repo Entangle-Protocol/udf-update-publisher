@@ -21,14 +21,14 @@ var (
 var regex = regexp.MustCompile(`^0x[a-fA-F0-9]{64}$`)
 
 type AssetSet struct {
-	SourceID string `yaml:"sourceID"`
+	SourceID string   `yaml:"sourceID"`
 	DataKeys []string `yaml:"dataKeys"`
 }
 
 type AppConfig struct {
 	FinalizeSnapshotURL string                   `yaml:"finalizeSnapshotUrl"`
 	DataKeys            []string                 `yaml:"dataKeys"`
-	Assets			    []AssetSet               `yaml:"assets"`
+	Assets              []AssetSet               `yaml:"assets"`
 	Networks            map[string]NetworkConfig `yaml:"networks"`
 	Publisher           PublisherConfig          `yaml:"publisher"`
 }
@@ -43,6 +43,7 @@ type PublisherConfig struct {
 }
 
 type NetworkConfig struct {
+	Type              string         `yaml:"type"`
 	TargetChainURL    string         `yaml:"targetChainUrl"`
 	PullOracleAddress common.Address `yaml:"pullOracleAddress"`
 	PrivateKey        string         `yaml:"privateKey"`
@@ -77,6 +78,9 @@ func (config AppConfig) Verify() error {
 	}
 
 	for name, net := range config.Networks {
+		if net.Type == "nonevm" {
+			continue
+		}
 		if _, err := url.ParseRequestURI(net.TargetChainURL); err != nil {
 			return fmt.Errorf("invalid %s TargetChainURL: %w", name, err)
 		}

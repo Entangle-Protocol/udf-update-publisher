@@ -45,9 +45,9 @@ func TestPublishUpdate(t *testing.T) {
 	merkleUpdate, err := NewMerkleUpdateFromProof(proof)
 	r.NoError(err)
 
-	transactorMock1.On("SendUpdate", merkleUpdate).Return(nil, nil)
+	transactorMock1.On("SendUpdate", merkleUpdate).Return(nil)
 	transactorMock1.On("LatestUpdate", merkleUpdate.DataKey).Return(big.NewInt(0), big.NewInt(0))
-	transactorMock2.On("SendUpdate", merkleUpdate).Return(nil, nil)
+	transactorMock2.On("SendUpdate", merkleUpdate).Return(nil)
 	transactorMock2.On("LatestUpdate", merkleUpdate.DataKey).Return(big.NewInt(0), big.NewInt(0))
 
 	conf := config.PublisherConfig{

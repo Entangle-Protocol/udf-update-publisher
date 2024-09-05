@@ -1,8 +1,8 @@
 stages:
   - versioning
   - sonarqube
-  - build
   - container_build
+  - build
   - push
   - clean_up
   - deploy_testnet
@@ -20,17 +20,7 @@ dev_test:
   stage: build
   image: golang:1.22.3-bookworm
   script:
-    - go test -v ./...
-    # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
-  # artifacts:
-  #   when: always
-  #   paths:
-  #     - test-report.json
-  #     - coverage.out
-  #   expire_in: 1 hour
-  # only:
-  #   changes:
-  #     - /*.go
+    - LD_LIBRARY_PATH=$(pwd) go test -v ./...
   tags:
     - docker
 
@@ -38,8 +28,14 @@ dev_build:
   stage: container_build
   script:
     - docker build -f ./docker/Dockerfile.publisher -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
+    - docker create --name ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
+    - docker cp ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID:/lib/libprice_publisher.so ./libprice_publisher.so
+    - docker rm ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
   tags:
     - linux
+  artifacts:
+    paths:
+      - ./libprice_publisher.so
 
 push_to_aws:
   stage: push

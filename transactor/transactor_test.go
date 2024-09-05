@@ -17,8 +17,6 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	ethsim "github.com/ethereum/go-ethereum/ethclient/simulated"
-
-
 	// ethmath "github.com/ethereum/go-ethereum/common/math"
 	// "github.com/ethereum/go-ethereum/accounts"
 	// smt "github.com/FantasyJony/openzeppelin-merkle-tree-go/standard_merkle_tree"
@@ -101,7 +99,7 @@ func TestSendUpdate(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			update := tC.getUpdate()
-			_, err = transactor.SendUpdate(update)
+			err = transactor.SendUpdate(update)
 			backend.Commit()
 
 			if tC.wantErr != "" {
@@ -209,7 +207,7 @@ func TestSendUpdate(t *testing.T) {
 //
 // 				price, success := new(big.Int).SetString(update.Price, 10)
 // 				r.True(success)
-// 				
+//
 // 				value := []any{update.Timestamp, ethmath.U256Bytes(price), dataKey}
 // 				merkleValues = append(merkleValues, value)
 // 			}
