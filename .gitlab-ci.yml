@@ -28,14 +28,14 @@ dev_build:
   stage: container_build
   script:
     - docker build -f ./docker/Dockerfile.publisher -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
-    - docker create --name ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
-    - docker cp ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID:/lib/libprice_publisher.so ./libprice_publisher.so
-    - docker rm ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
+    # - docker create --name ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
+    # - docker cp ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID:/lib/libprice_publisher.so ./libprice_publisher.so
+    # - docker rm ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
   tags:
     - linux
-  artifacts:
-    paths:
-      - ./libprice_publisher.so
+  # artifacts:
+  #   paths:
+  #     - ./libprice_publisher.so
 
 push_to_aws:
   stage: push
