@@ -11,4 +11,3 @@ solana:
     suspend_balance_lamports: 1000000000
     executor_attempts: 2
     chain_id: 100000000000000000000
-
