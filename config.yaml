@@ -21,14 +21,11 @@ publisher:
   priceDiffThreshold: 100
 networks:
   solana:
-    type: "nonevm"
   eth_sepolia:
-    type: "evm"
     targetChainUrl: https://ethereum-sepolia-rpc.publicnode.com
     pullOracleAddress: 0x0b2d8Ef1D9104c4Df5C89F00B645Ce8bAa56DeB5
     privateKey: 0x39e1b4ee29089ac4c1918bbea6b68d96cda9146d51cbab6ceeea1ba3904ef6f0
   mantle_sepolia:
-    type: "evm"
     targetChainUrl: https://rpc.sepolia.mantle.xyz
     pullOracleAddress: 0x751c47110351806e41ccDA4C181a50edfA6b63E0
     privateKey: 0x39e1b4ee29089ac4c1918bbea6b68d96cda9146d51cbab6ceeea1ba3904ef6f0
