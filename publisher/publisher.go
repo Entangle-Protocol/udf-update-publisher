@@ -153,7 +153,7 @@ func newUpdateTransactor(conf config.PublisherConfig, t transactor.ITransactor) 
 }
 
 func (t *updateTransactor) sendMultipleUpdate(update *types.MerkleRootUpdateMultiple) error {
-	if _, err := t.SendMultipleUpdate(update); err != nil {
+	if err := t.SendMultipleUpdate(update); err != nil {
 		return fmt.Errorf("failed to send multiple update: %w", err)
 	}
 
@@ -161,8 +161,8 @@ func (t *updateTransactor) sendMultipleUpdate(update *types.MerkleRootUpdateMult
 	for _, u := range update.UpdateData {
 		dataKey := common.BytesToHash(u.DataKey[:])
 		t.dataKeys[dataKey] = &latestUpdate{
-			price:     new(big.Int).Set(u.Price),
-			updatedAt: new(big.Int).Set(u.Timestamp),
+			price:     new(big.Int).Set(&u.Price),
+			updatedAt: new(big.Int).Set(&u.Timestamp),
 		}
 	}
 	t.mutex.Unlock()
@@ -174,7 +174,7 @@ func (t *updateTransactor) sendUpdate(update *types.MerkleRootUpdate) error {
 		return fmt.Errorf("skip update: %w", err)
 	}
 
-	if _, err := t.SendUpdate(update); err != nil {
+	if err := t.SendUpdate(update); err != nil {
 		return fmt.Errorf("failed to send update: %w", err)
 	}
 

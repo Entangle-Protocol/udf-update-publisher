@@ -42,8 +42,8 @@ type MerkleRootUpdate struct {
 type MultipleUpdateData struct {
 	DataKey     [32]byte
 	MerkleProof [][32]byte
-	Price       *big.Int
-	Timestamp   *big.Int
+	Price       big.Int
+	Timestamp   big.Int
 }
 
 type MerkleRootUpdateMultiple struct {
@@ -69,8 +69,8 @@ func NewMekrleRootUpdateMultipleFromUpdates(
 		updateData[i] = MultipleUpdateData{
 			DataKey:     update.DataKey,
 			MerkleProof: update.MerkleProof,
-			Price:       update.Price,
-			Timestamp:   update.Timestamp,
+			Price:       *update.Price,
+			Timestamp:   *update.Timestamp,
 		}
 	}
 
@@ -162,10 +162,10 @@ func (up *MerkleRootUpdateMultiple) ToCalldata() ([]byte, error) {
 		}
 
 		// Encode update values
-		if err := binary.Write(updateBuffer, binary.BigEndian, ethmath.U256Bytes(update.Timestamp)); err != nil {
+		if err := binary.Write(updateBuffer, binary.BigEndian, ethmath.U256Bytes(&update.Timestamp)); err != nil {
 			return nil, err
 		}
-		if err := binary.Write(updateBuffer, binary.BigEndian, ethmath.U256Bytes(update.Price)); err != nil {
+		if err := binary.Write(updateBuffer, binary.BigEndian, ethmath.U256Bytes(&update.Price)); err != nil {
 			return nil, err
 		}
 		if err := binary.Write(updateBuffer, binary.BigEndian, update.DataKey[:]); err != nil {

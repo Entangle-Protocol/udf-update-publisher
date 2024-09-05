@@ -4,10 +4,7 @@ package transactor
 
 import (
 	big "math/big"
-
-	coretypes "github.com/ethereum/go-ethereum/core/types"
 	mock "github.com/stretchr/testify/mock"
-
 	types "gitlab.ent-dx.com/entangle/pull-update-publisher/types"
 )
 
@@ -132,33 +129,22 @@ func (_c *MockITransactor_LatestUpdate_Call) RunAndReturn(run func([32]byte) (*b
 }
 
 // SendMultipleUpdate provides a mock function with given fields: update
-func (_m *MockITransactor) SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) (*coretypes.Transaction, error) {
+func (_m *MockITransactor) SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) error {
 	ret := _m.Called(update)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SendMultipleUpdate")
 	}
 
-	var r0 *coretypes.Transaction
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*types.MerkleRootUpdateMultiple) (*coretypes.Transaction, error)); ok {
-		return rf(update)
-	}
-	if rf, ok := ret.Get(0).(func(*types.MerkleRootUpdateMultiple) *coretypes.Transaction); ok {
+	var r0 error
+
+	if rf, ok := ret.Get(0).(func(*types.MerkleRootUpdateMultiple) error); ok {
 		r0 = rf(update)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*coretypes.Transaction)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(*types.MerkleRootUpdateMultiple) error); ok {
-		r1 = rf(update)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // MockITransactor_SendMultipleUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendMultipleUpdate'
@@ -179,44 +165,32 @@ func (_c *MockITransactor_SendMultipleUpdate_Call) Run(run func(update *types.Me
 	return _c
 }
 
-func (_c *MockITransactor_SendMultipleUpdate_Call) Return(_a0 *coretypes.Transaction, _a1 error) *MockITransactor_SendMultipleUpdate_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *MockITransactor_SendMultipleUpdate_Call) Return( _a1 error) *MockITransactor_SendMultipleUpdate_Call {
+	_c.Call.Return( _a1)
 	return _c
 }
 
-func (_c *MockITransactor_SendMultipleUpdate_Call) RunAndReturn(run func(*types.MerkleRootUpdateMultiple) (*coretypes.Transaction, error)) *MockITransactor_SendMultipleUpdate_Call {
+func (_c *MockITransactor_SendMultipleUpdate_Call) RunAndReturn(run func(*types.MerkleRootUpdateMultiple) error) *MockITransactor_SendMultipleUpdate_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SendUpdate provides a mock function with given fields: update
-func (_m *MockITransactor) SendUpdate(update *types.MerkleRootUpdate) (*coretypes.Transaction, error) {
+func (_m *MockITransactor) SendUpdate(update *types.MerkleRootUpdate) error {
 	ret := _m.Called(update)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SendUpdate")
 	}
 
-	var r0 *coretypes.Transaction
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*types.MerkleRootUpdate) (*coretypes.Transaction, error)); ok {
-		return rf(update)
-	}
-	if rf, ok := ret.Get(0).(func(*types.MerkleRootUpdate) *coretypes.Transaction); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*types.MerkleRootUpdate) error); ok {
 		r0 = rf(update)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*coretypes.Transaction)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(*types.MerkleRootUpdate) error); ok {
-		r1 = rf(update)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // MockITransactor_SendUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendUpdate'
@@ -237,12 +211,12 @@ func (_c *MockITransactor_SendUpdate_Call) Run(run func(update *types.MerkleRoot
 	return _c
 }
 
-func (_c *MockITransactor_SendUpdate_Call) Return(_a0 *coretypes.Transaction, _a1 error) *MockITransactor_SendUpdate_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *MockITransactor_SendUpdate_Call) Return(_a1 error) *MockITransactor_SendUpdate_Call {
+	_c.Call.Return(_a1)
 	return _c
 }
 
-func (_c *MockITransactor_SendUpdate_Call) RunAndReturn(run func(*types.MerkleRootUpdate) (*coretypes.Transaction, error)) *MockITransactor_SendUpdate_Call {
+func (_c *MockITransactor_SendUpdate_Call) RunAndReturn(run func(*types.MerkleRootUpdate) error) *MockITransactor_SendUpdate_Call {
 	_c.Call.Return(run)
 	return _c
 }

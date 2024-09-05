@@ -10,11 +10,16 @@
             "request": "launch",
             "mode": "auto",
             "cwd": "${workspaceFolder}",
-            "program": "./cmd/pull-update-publisher/main.go"
+            "program": "./cmd/pull-update-publisher/main.go",
             "args": [
                 "--verbosity",
                 "6"
-            ]
+            ],
+            "env": {
+                "ENT_SOLANA_PUBLISHER_CONFIG": "${workspaceFolder}/config_solana.yml",
+                "LD_LIBRARY_PATH": "${workspaceFolder}",
+                "RUST_LOG": "info,price_publisher=debug,solana_tools=debug"
+            }
         }
     ]
 }

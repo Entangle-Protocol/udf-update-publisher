@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -57,45 +58,7 @@ var pullUpdatePublisherCmd = &cobra.Command{
 			http.DefaultClient, config.FinalizeSnapshotURL,
 		)
 
-		//
-		// Create transactors
-		//
-		transactors := make([]transactor.ITransactor, 0, len(config.Networks))
-
-		for name, net := range config.Networks {
-			log := log.WithFields(log.Fields{
-				"network":        name,
-				"targetChainUrl": net.TargetChainURL,
-			})
-
-			client, err := ethclient.Dial(net.TargetChainURL)
-			if err != nil {
-				log.Fatalf("Failed to dial target chain: %v", err)
-				panic(err)
-			}
-
-			chainID, err := client.ChainID(ctx)
-			if err != nil {
-				log.Fatalf("Failed to get chain ID: %v", err)
-				panic(err)
-			}
-
-			// Load private key
-			key, err := keystore.ParseKeyFromHex(net.PrivateKey)
-			if err != nil {
-				log.Fatalf("Failed to parse private key: %v", err)
-				panic(err)
-			}
-
-			transactor, err := transactor.NewTransactor(ctx, client, key, chainID, net.PullOracleAddress)
-			if err != nil {
-				log.Fatalf("Failed to create transactor: %v", err)
-				panic(err)
-			}
-
-			transactors = append(transactors, transactor)
-		}
-
+		transactors := CreateTransactors(ctx, config.Networks)
 		// Create publisher
 		publisher := publisher.NewUpdatePublisher(config.Publisher, transactors, restFetcher, config.DataKeys, config.Assets)
 
@@ -116,6 +79,67 @@ var pullUpdatePublisherCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+func CreateTransactors(ctx context.Context, networks map[string]config.NetworkConfig) []transactor.ITransactor {
+	transactors := make([]transactor.ITransactor, 0, len(networks))
+	for name, net := range networks {
+		log := log.WithFields(log.Fields{
+			"network": name,
+		})
+		if net.Type == "nonevm" {
+			log.Infof("Register solana transactor")
+			transactor, err := transactor.NewSolanaTransactor()
+			if err != nil {
+				log.Fatalf("Failed to create Solana transactor: %v", err)
+				panic(err)
+			}
+			transactors = append(transactors, transactor)
+		} else if net.Type == "evm" {
+			log.Infof("Register evm transactor: %s, url: %s, pull oracle: %s", name, net.TargetChainURL, net.PullOracleAddress)
+			transactor, err := CreateEVMTransactor(ctx, name, net)
+			if err != nil {
+				log.Fatalf("Failed to create EVM transactor: %v", err)
+				panic(err)
+			}
+			transactors = append(transactors, transactor)
+		}
+	}
+	return transactors
+}
+
+func CreateEVMTransactor(ctx context.Context, networkName string, net config.NetworkConfig) (transactor.ITransactor, error) {
+	log := log.WithFields(log.Fields{
+		"network":        networkName,
+		"targetChainUrl": net.TargetChainURL,
+	})
+
+	client, err := ethclient.Dial(net.TargetChainURL)
+	if err != nil {
+		log.Fatalf("Failed to dial target chain: %v", err)
+		return nil, err
+	}
+
+	chainID, err := client.ChainID(ctx)
+	if err != nil {
+		log.Fatalf("Failed to get chain ID: %v", err)
+		return nil, err
+	}
+
+	// Load private key
+	key, err := keystore.ParseKeyFromHex(net.PrivateKey)
+	if err != nil {
+		log.Fatalf("Failed to parse private key: %v", err)
+		return nil, err
+	}
+
+	transactor, err := transactor.NewTransactor(ctx, client, key, chainID, net.PullOracleAddress)
+	if err != nil {
+		log.Fatalf("Failed to create transactor: %v", err)
+		return nil, err
+	}
+
+	return transactor, nil
 }
 
 func Execute() {
