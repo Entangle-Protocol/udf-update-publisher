@@ -6,19 +6,44 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	defaultPriceDiffThreshold = 100
+	defaultUpdateThreshold    = 5 * time.Minute
+	defaultUpdateInterval     = 30
+)
+
 var regex = regexp.MustCompile(`^0x[a-fA-F0-9]{64}$`)
+
+type AssetSet struct {
+	SourceID string   `yaml:"sourceID"`
+	DataKeys []string `yaml:"dataKeys"`
+}
 
 type AppConfig struct {
 	FinalizeSnapshotURL string                   `yaml:"finalizeSnapshotUrl"`
+	DataKeys            []string                 `yaml:"dataKeys"`
+	Assets              []AssetSet               `yaml:"assets"`
 	Networks            map[string]NetworkConfig `yaml:"networks"`
+	Publisher           PublisherConfig          `yaml:"publisher"`
+}
+
+type PublisherConfig struct {
+	// Price diff threshold in percents where (1% = 100), below which an update will not be published
+	PriceDiffThreshold uint `yaml:"priceDiffThreshold"`
+	// Interval in seconds for publishing updates for DataKeys
+	UpdateInterval uint `yaml:"updateInterval"`
+	// Threshold in time duration, below which an update will not be published
+	UpdateThreshold time.Duration `yaml:"updateThreshold"`
 }
 
 type NetworkConfig struct {
+	Type              string         `yaml:"type"`
 	TargetChainURL    string         `yaml:"targetChainUrl"`
 	PullOracleAddress common.Address `yaml:"pullOracleAddress"`
 	PrivateKey        string         `yaml:"privateKey"`
@@ -31,12 +56,31 @@ func (config AppConfig) Verify() error {
 		return fmt.Errorf("networks are required")
 	}
 
+	if len(config.DataKeys) == 0 {
+		return fmt.Errorf("data keys are required")
+	}
+
+	if config.Publisher.UpdateInterval == 0 {
+		return fmt.Errorf("update interval is required")
+	}
+
+	if config.Publisher.PriceDiffThreshold == 0 {
+		config.Publisher.PriceDiffThreshold = uint(defaultPriceDiffThreshold)
+	}
+
+	if int64(config.Publisher.UpdateThreshold.Seconds()) == 0 {
+		config.Publisher.UpdateThreshold = defaultUpdateThreshold
+	}
+
 	// Check if URLs are valid
 	if _, err := url.ParseRequestURI(config.FinalizeSnapshotURL); err != nil {
 		return fmt.Errorf("invalid FinalizeSnapshotURL: %w", err)
 	}
 
 	for name, net := range config.Networks {
+		if name == "solana" {
+			continue
+		}
 		if _, err := url.ParseRequestURI(net.TargetChainURL); err != nil {
 			return fmt.Errorf("invalid %s TargetChainURL: %w", name, err)
 		}

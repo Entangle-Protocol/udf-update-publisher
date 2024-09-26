@@ -1,11 +1,12 @@
 stages:
   - versioning
   - sonarqube
-  - build
   - container_build
+  - build
   - push
   - clean_up
-  - deploy
+  - deploy_testnet
+  - deploy_mainnet
   - security-scans
 
 versioning and prepare:
@@ -18,19 +19,9 @@ versioning and prepare:
 # Run tests
 dev_test:
   stage: build
-  image: golang:latest
+  image: golang:1.22.3-bookworm
   script:
-    - go test -v ./...
-    # - go test -coverprofile=coverage.out -json ./... | tee test-report.json
-  # artifacts:
-  #   when: always
-  #   paths:
-  #     - test-report.json
-  #     - coverage.out
-  #   expire_in: 1 hour
-  # only:
-  #   changes:
-  #     - /*.go
+    - LD_LIBRARY_PATH=$(pwd) go test -v ./...
   tags:
     - docker
 
@@ -38,8 +29,14 @@ dev_build:
   stage: container_build
   script:
     - docker build -f ./docker/Dockerfile.publisher -t 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID .
+    # - docker create --name ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID 899260217834.dkr.ecr.us-east-1.amazonaws.com/pull-update-publisher:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
+    # - docker cp ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID:/lib/libprice_publisher.so ./libprice_publisher.so
+    # - docker rm ctr-$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
   tags:
     - linux
+  # artifacts:
+  #   paths:
+  #     - ./libprice_publisher.so
 
 push_to_aws:
   stage: push
@@ -58,11 +55,23 @@ clean_up_image:
   tags:
     - linux
 
-deploy_pull-update-publisher:
-  stage: deploy
+deploy_pull-update-publisher_testnet:
+  stage: deploy_testnet
   script:
     - git clone https://oauth2:$OAUTH_KEY@gitlab.ent-dx.com/devops/ci-scripts.git
     - python3 ci-scripts/awx_call.py https://awx.ent-dx.com/api/v2/job_templates/112/launch/ $AWX_TOKEN script_target:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
+  tags:
+    - linux
+  only:
+    - main
+    - dev
+  when: manual
+
+deploy_pull-update-publisher_mainnet:
+  stage: deploy_mainnet
+  script:
+    - git clone https://oauth2:$OAUTH_KEY@gitlab.ent-dx.com/devops/ci-scripts.git
+    - python3 ci-scripts/awx_call.py https://awx.ent-dx.com/api/v2/job_templates/165/launch/ $AWX_TOKEN script_target:$CI_COMMIT_BRANCH.$CI_PIPELINE_ID
   tags:
     - linux
   only:
@@ -84,4 +93,3 @@ security-scans:
     - when: never    
 variables:
   DEFECTDOJO_PRODUCTID: 12
-

@@ -3,8 +3,8 @@
 package transactor
 
 import (
+	big "math/big"
 	mock "github.com/stretchr/testify/mock"
-
 	types "gitlab.ent-dx.com/entangle/pull-update-publisher/types"
 )
 
@@ -19,6 +19,160 @@ type MockITransactor_Expecter struct {
 
 func (_m *MockITransactor) EXPECT() *MockITransactor_Expecter {
 	return &MockITransactor_Expecter{mock: &_m.Mock}
+}
+
+// ChainID provides a mock function with given fields:
+func (_m *MockITransactor) ChainID() *big.Int {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for ChainID")
+	}
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func() *big.Int); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
+}
+
+// MockITransactor_ChainID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ChainID'
+type MockITransactor_ChainID_Call struct {
+	*mock.Call
+}
+
+// ChainID is a helper method to define mock.On call
+func (_e *MockITransactor_Expecter) ChainID() *MockITransactor_ChainID_Call {
+	return &MockITransactor_ChainID_Call{Call: _e.mock.On("ChainID")}
+}
+
+func (_c *MockITransactor_ChainID_Call) Run(run func()) *MockITransactor_ChainID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockITransactor_ChainID_Call) Return(_a0 *big.Int) *MockITransactor_ChainID_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockITransactor_ChainID_Call) RunAndReturn(run func() *big.Int) *MockITransactor_ChainID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// LatestUpdate provides a mock function with given fields: dataKey
+func (_m *MockITransactor) LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int) {
+	ret := _m.Called(dataKey)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LatestUpdate")
+	}
+
+	var r0 *big.Int
+	var r1 *big.Int
+	if rf, ok := ret.Get(0).(func([32]byte) (*big.Int, *big.Int)); ok {
+		return rf(dataKey)
+	}
+	if rf, ok := ret.Get(0).(func([32]byte) *big.Int); ok {
+		r0 = rf(dataKey)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func([32]byte) *big.Int); ok {
+		r1 = rf(dataKey)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*big.Int)
+		}
+	}
+
+	return r0, r1
+}
+
+// MockITransactor_LatestUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LatestUpdate'
+type MockITransactor_LatestUpdate_Call struct {
+	*mock.Call
+}
+
+// LatestUpdate is a helper method to define mock.On call
+//   - dataKey [32]byte
+func (_e *MockITransactor_Expecter) LatestUpdate(dataKey interface{}) *MockITransactor_LatestUpdate_Call {
+	return &MockITransactor_LatestUpdate_Call{Call: _e.mock.On("LatestUpdate", dataKey)}
+}
+
+func (_c *MockITransactor_LatestUpdate_Call) Run(run func(dataKey [32]byte)) *MockITransactor_LatestUpdate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].([32]byte))
+	})
+	return _c
+}
+
+func (_c *MockITransactor_LatestUpdate_Call) Return(_a0 *big.Int, _a1 *big.Int) *MockITransactor_LatestUpdate_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockITransactor_LatestUpdate_Call) RunAndReturn(run func([32]byte) (*big.Int, *big.Int)) *MockITransactor_LatestUpdate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SendMultipleUpdate provides a mock function with given fields: update
+func (_m *MockITransactor) SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) error {
+	ret := _m.Called(update)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SendMultipleUpdate")
+	}
+
+	var r0 error
+
+	if rf, ok := ret.Get(0).(func(*types.MerkleRootUpdateMultiple) error); ok {
+		r0 = rf(update)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockITransactor_SendMultipleUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendMultipleUpdate'
+type MockITransactor_SendMultipleUpdate_Call struct {
+	*mock.Call
+}
+
+// SendMultipleUpdate is a helper method to define mock.On call
+//   - update *types.MerkleRootUpdateMultiple
+func (_e *MockITransactor_Expecter) SendMultipleUpdate(update interface{}) *MockITransactor_SendMultipleUpdate_Call {
+	return &MockITransactor_SendMultipleUpdate_Call{Call: _e.mock.On("SendMultipleUpdate", update)}
+}
+
+func (_c *MockITransactor_SendMultipleUpdate_Call) Run(run func(update *types.MerkleRootUpdateMultiple)) *MockITransactor_SendMultipleUpdate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*types.MerkleRootUpdateMultiple))
+	})
+	return _c
+}
+
+func (_c *MockITransactor_SendMultipleUpdate_Call) Return( _a1 error) *MockITransactor_SendMultipleUpdate_Call {
+	_c.Call.Return( _a1)
+	return _c
+}
+
+func (_c *MockITransactor_SendMultipleUpdate_Call) RunAndReturn(run func(*types.MerkleRootUpdateMultiple) error) *MockITransactor_SendMultipleUpdate_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // SendUpdate provides a mock function with given fields: update
@@ -57,8 +211,8 @@ func (_c *MockITransactor_SendUpdate_Call) Run(run func(update *types.MerkleRoot
 	return _c
 }
 
-func (_c *MockITransactor_SendUpdate_Call) Return(_a0 error) *MockITransactor_SendUpdate_Call {
-	_c.Call.Return(_a0)
+func (_c *MockITransactor_SendUpdate_Call) Return(_a1 error) *MockITransactor_SendUpdate_Call {
+	_c.Call.Return(_a1)
 	return _c
 }
 

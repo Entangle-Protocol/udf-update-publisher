@@ -1,56 +1,118 @@
 package fetcher
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
-	"path"
-
-	"github.com/ethereum/go-ethereum/common"
-	log "github.com/sirupsen/logrus"
+	"net/url"
+	"strings"
 )
 
-type HashEncodedSignatureDoc struct {
-	R common.Hash
-	S common.Hash
-	V byte
-}
-
-const GetAssetDataUriPath = "/getAssetData"
-
-type FinalizedDataDoc struct {
-	Timestamp int64  `bson:"timestamp"`
-	PriceData []byte `bson:"priceData"`
-}
-
-// FeedProof holds the latest feed proof. Matches the schema from finalized-data-snapshot backend API
-type EntangleFeedProof struct {
-	MerkleRoot   common.Hash               `json:"merkleRoot"`
-	Signatures   []HashEncodedSignatureDoc `json:"signatures"`
-	MerkleProofs [][]byte                  `json:"merkleProofs"`
-	Key          string                    `json:"key"`
-	Value        FinalizedDataDoc          `json:"value"`
-}
+const (
+	getAssetDataUriPath = "/asset"
+	getSpottersUriPath  = "/spotters"
+)
 
 type RestFetcher struct {
+	finalizedSnapshotUrl string
 	client               *http.Client
-	FinalizedSnapshotUrl string
 }
 
 func NewRestFetcher(
-	finalizedSnapshotUrl string,
 	client *http.Client,
-) (*RestFetcher, error) {
+	finalizedSnapshotUrl string,
+) *RestFetcher {
 	return &RestFetcher{
 		client:               client,
-		FinalizedSnapshotUrl: finalizedSnapshotUrl,
-	}, nil
+		finalizedSnapshotUrl: finalizedSnapshotUrl,
+	}
 }
 
-func (r *RestFetcher) GetFeedProofs() (*EntangleFeedProof, error) {
-	resp, err := r.client.Get(path.Join(r.FinalizedSnapshotUrl, GetAssetDataUriPath))
+func (r *RestFetcher) GetFeedProofs(ctx context.Context, assetKey string) (*EntangleFeedProof, error) {
+	url, err := url.JoinPath(r.finalizedSnapshotUrl, getAssetDataUriPath, assetKey)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Infof("Got response: %v", resp)
-	return nil, nil
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		type result struct {
+			Calldata *EntangleFeedProof `json:"calldata"`
+		}
+
+		var res result
+		if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+			return nil, err
+		}
+
+		return res.Calldata, nil
+	default:
+		type errorResponse struct {
+			Error string `json:"error"`
+		}
+
+		var errResp errorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to get feed proofs: %v", errResp.Error)
+	}
+}
+
+func (r *RestFetcher) GetSpotterFeedsProofs(ctx context.Context, spotterID string, assetKeys []string) (*EntangleFeedsProofs, error) {
+	url, err := url.JoinPath(r.finalizedSnapshotUrl, getSpottersUriPath, spotterID)
+	if err != nil {
+		return nil, err
+	}
+
+	url += "?assets=" + strings.Join(assetKeys, ",")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		type result struct {
+			Calldata *EntangleFeedsProofs `json:"calldata"`
+		}
+
+		var res result
+		if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+			return nil, err
+		}
+
+		return res.Calldata, nil
+	default:
+		type errorResponse struct {
+			Error string `json:"error"`
+		}
+
+		var errResp errorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to get spotter feeds proofs: %v", errResp.Error)
+	}
 }

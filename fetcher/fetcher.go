@@ -1,5 +1,8 @@
 package fetcher
 
+import "context"
+
 type IFetcher interface {
-	GetFeedProofs() (*EntangleFeedProof, error)
+	GetFeedProofs(ctx context.Context, assetKey string) (*EntangleFeedProof, error)
+	GetSpotterFeedsProofs(ctx context.Context, spotterID string, assetKeys []string) (*EntangleFeedsProofs, error)
 }

@@ -3,32 +3,40 @@ package transactor
 import (
 	"context"
 	"crypto/ecdsa"
+	"math/big"
+	"strings"
+
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/contrib/contracts/datafeeds/PullOracle"
 	"gitlab.ent-dx.com/entangle/pull-update-publisher/types"
-	"math/big"
+	"gitlab.ent-dx.com/entangle/pull-update-publisher/utils"
 
 	// "github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 )
 
 type ITransactor interface {
 	SendUpdate(update *types.MerkleRootUpdate) error
+	SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) error
+	LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int)
+	ChainID() *big.Int
 }
 
 type Transactor struct {
-	PullOracle *PullOracle.PullOracle
+	ctx    context.Context
+	client bind.ContractBackend
 	// Private key of the signer that sends price updates
-	PrivateKey *ecdsa.PrivateKey
-	ChainID    *big.Int
+	privateKey *ecdsa.PrivateKey
+	chainID    *big.Int
 	opts       *bind.TransactOpts
-	client     bind.ContractBackend
-	ctx        context.Context
+	pullOracle *PullOracle.PullOracle
 }
 
 func NewTransactor(
-	context context.Context,
+	ctx context.Context,
 	client bind.ContractBackend,
 	privateKey *ecdsa.PrivateKey,
 	chainID *big.Int,
@@ -40,11 +48,11 @@ func NewTransactor(
 	}
 
 	transactor := &Transactor{
-		PullOracle: pullOracle,
-		PrivateKey: privateKey,
-		ChainID:    chainID,
 		client:     client,
-		ctx:        context,
+		ctx:        ctx,
+		privateKey: privateKey,
+		chainID:    chainID,
+		pullOracle: pullOracle,
 	}
 
 	opts, err := transactor.createTransactOpts(chainID)
@@ -56,9 +64,154 @@ func NewTransactor(
 	return transactor, nil
 }
 
+func (t *Transactor) ChainID() *big.Int {
+	return t.chainID
+}
+
+func (t *Transactor) SendMultipleUpdate(update *types.MerkleRootUpdateMultiple) error {
+	updateCalldata, err := update.ToCalldata()
+	if err != nil {
+		log.WithError(err).Error("Failed to encode multiple updates into calldata")
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"merkleRoot": ethcommon.Bytes2Hex(update.MerkleRoot[:]),
+		"chainID":    t.chainID,
+		"dataKeys": utils.Map(update.UpdateData, func(u types.MultipleUpdateData) string {
+			return strings.TrimRight(string(u.DataKey[:]), "\x00")
+		}),
+	}).Info("Sending PullOracle.UpdateMultipleAssets tx")
+
+	var tx *ethtypes.Transaction
+	for {
+		// Send update to PullOracle contract
+		tx, err = t.pullOracle.UpdateMultipleAssets(
+			t.opts,
+			updateCalldata,
+		)
+		if err != nil {
+			if strings.Contains(err.Error(), "invalid nonce") || strings.Contains(err.Error(), "nonce too low") {
+				// If the error is regarding nonce, fetch correct nonce and retry
+				log.WithFields(log.Fields{
+					"error": err,
+					"nonce": t.opts.Nonce,
+				}).Warn("Transactor: Invalid nonce, fetching correct nonce and retrying...")
+
+				nonce, err := t.client.PendingNonceAt(
+					t.ctx,
+					t.opts.From,
+				)
+				if err != nil {
+					log.WithError(err).Error("Transactor: Failed to fetch correct nonce")
+					return err
+				}
+
+				log.WithField("nonce", nonce).Info("Transactor: Fetched correct nonce")
+				t.opts.Nonce.Set(big.NewInt(int64(nonce)))
+
+				continue
+			}
+
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Error("Failed to execute PullOracle.UpdateMultipleAssets")
+
+			return err
+		}
+
+		log.WithFields(log.Fields{
+			"tx": tx.Hash().Hex(),
+		}).Info("Sent update to PullOracle contract")
+
+		break
+	}
+
+	t.opts.Nonce.Add(t.opts.Nonce, big.NewInt(1))
+
+	return nil
+}
+
+func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
+	// Remap to correct type...
+	signatures := make([]PullOracle.PullOracleSignature, len(update.Signatures))
+	for i, s := range update.Signatures {
+		signatures[i] = PullOracle.PullOracleSignature{
+			R: s.R,
+			S: s.S,
+			V: s.V,
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"merkleRoot": ethcommon.Bytes2Hex(update.NewMerkleRoot[:]),
+		"dataKey":    ethcommon.Bytes2Hex(update.DataKey[:]),
+	}).Info("Sending PullOracle.GetLastPrice tx")
+
+	for {
+		// Send update to PullOracle contract
+		tx, err := t.pullOracle.GetLastPrice(
+			t.opts,
+			update.NewMerkleRoot,
+			update.MerkleProof,
+			signatures,
+			update.DataKey,
+			update.Price,
+			update.Timestamp,
+		)
+		if err != nil {
+			if strings.Contains(err.Error(), "invalid nonce") || strings.Contains(err.Error(), "nonce too low") {
+				// If the error is regarding nonce, fetch correct nonce and retry
+				log.WithFields(log.Fields{
+					"error": err,
+					"nonce": t.opts.Nonce,
+				}).Warn("Transactor: Invalid nonce, fetching correct nonce and retrying...")
+
+				nonce, err := t.client.PendingNonceAt(
+					t.ctx,
+					t.opts.From,
+				)
+				if err != nil {
+					log.WithError(err).Error("Transactor: Failed to fetch correct nonce")
+					return err
+				}
+
+				log.WithField("nonce", nonce).Info("Transactor: Fetched correct nonce")
+				t.opts.Nonce.Set(big.NewInt(int64(nonce)))
+
+				continue
+			}
+
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Error("Failed to execute PullOracle.GetLastPrice")
+
+			return err
+		}
+
+		log.WithFields(log.Fields{
+			"tx": tx.Hash().Hex(),
+		}).Info("Sent update to PullOracle contract")
+
+		break
+	}
+
+	t.opts.Nonce.Add(t.opts.Nonce, big.NewInt(1))
+
+	return nil
+}
+
+func (t *Transactor) LatestUpdate(dataKey [32]byte) (*big.Int, *big.Int) {
+	update, err := t.pullOracle.LatestUpdate(&bind.CallOpts{}, dataKey)
+	if err != nil {
+		return big.NewInt(0), big.NewInt(0)
+	}
+	return update.LatestPrice, update.LatestTimestamp
+}
+
 func (t *Transactor) createTransactOpts(chainID *big.Int) (*bind.TransactOpts, error) {
 	opts, err := bind.NewKeyedTransactorWithChainID(
-		t.PrivateKey,
+		t.privateKey,
 		chainID,
 	)
 	if err != nil {
@@ -75,43 +228,7 @@ func (t *Transactor) createTransactOpts(chainID *big.Int) (*bind.TransactOpts, e
 	}
 
 	opts.Nonce = big.NewInt(int64(nonce))
+	// opts.GasLimit = 500000
 
 	return opts, nil
-}
-
-func (t *Transactor) SendUpdate(update *types.MerkleRootUpdate) error {
-
-	// Remap to correct type...
-	signatures := make([]PullOracle.PullOracleSignature, len(update.Signatures))
-	for i, s := range update.Signatures {
-		signatures[i] = PullOracle.PullOracleSignature{
-			V: s.V,
-			R: s.R,
-			S: s.S,
-		}
-	}
-	log.Infof("Sending update to PullOracle contract")
-
-	// Send update to PullOracle contract
-	tx, err := t.PullOracle.GetLastPrice(
-		t.opts,
-		update.NewMerkleRoot,
-		update.MerkleProof,
-		signatures,
-		update.Price,
-		update.Timestamp,
-	)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"error":  err,
-			"update": update,
-		}).Error("Failed to execute PullOracle.GetLastPrice")
-		return err
-	}
-
-	log.WithFields(log.Fields{
-		"tx": tx.Hash().Hex(),
-	}).Info("Sent update to PullOracle contract")
-
-	return nil
 }

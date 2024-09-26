@@ -1,0 +1,13 @@
+solana:
+    read_rpcs:
+        -   url: https://rpc.ankr.com/solana_devnet/bd53c71861ec986f1d40e84d82d327d181fb61c6057f5fbb4fd01c93d6389c97
+            ratelimit: 4
+    write_rpcs:
+        -   url: https://rpc.ankr.com/solana_devnet/bd53c71861ec986f1d40e84d82d327d181fb61c6057f5fbb4fd01c93d6389c97
+            ratelimit: 1
+    commitment: confirmed
+    check_balance_period: 100
+    warn_balance_lamports: 2000000000
+    suspend_balance_lamports: 1000000000
+    executor_attempts: 2
+    chain_id: 100000000000000000000
