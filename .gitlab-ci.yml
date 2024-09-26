@@ -7,6 +7,7 @@ stages:
   - clean_up
   - deploy_testnet
   - deploy_mainnet
+  - security-scans
 
 versioning and prepare:
   stage: versioning
@@ -77,3 +78,18 @@ deploy_pull-update-publisher_mainnet:
     - main
     - dev
   when: manual
+
+security-scans:
+  stage: security-scans
+  trigger:
+    include:
+      - project: 'entangle/security'
+        ref: 'main'
+        file: '.gitlab-ci.yml'
+  needs: []
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - when: never    
+variables:
+  DEFECTDOJO_PRODUCTID: 12
