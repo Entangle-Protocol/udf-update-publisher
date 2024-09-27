@@ -1,0 +1,8 @@
+all: true
+recursive: true
+with-expecter: true
+
+packages:
+  gitlab.ent-dx.com/entangle/pull-update-publisher/fetcher:
+  gitlab.ent-dx.com/entangle/pull-update-publisher/publisher:
+  gitlab.ent-dx.com/entangle/pull-update-publisher/transactor:

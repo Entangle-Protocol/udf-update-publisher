@@ -1,0 +1,31 @@
+finalizeSnapshotUrl: https://pricefeed.entangle.fi
+dataKeys:
+  - NGL/USD
+  - ETH/USD
+  - BTC/USD
+  - GAS-ETH
+  - GAS-BSC
+assets:
+  - sourceID: prices-feed1
+    dataKeys:
+    - NGL/USD
+    - ETH/USD
+    - BTC/USD
+  - sourceID: gas-feed1
+    dataKeys:
+    - GAS-ETH
+    - GAS-BSC
+publisher:
+  updateInterval: 30 
+  updateThreshold: 5m0s
+  priceDiffThreshold: 100
+networks:
+  solana:
+  eth_sepolia:
+    targetChainUrl: https://ethereum-sepolia-rpc.publicnode.com
+    pullOracleAddress: 0x0b2d8Ef1D9104c4Df5C89F00B645Ce8bAa56DeB5
+    privateKey: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+  mantle_sepolia:
+    targetChainUrl: https://rpc.sepolia.mantle.xyz
+    pullOracleAddress: 0x751c47110351806e41ccDA4C181a50edfA6b63E0
+    privateKey: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
