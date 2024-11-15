@@ -1,7 +1,44 @@
-# pull-update-publisher
+# Universal Data Feeds (UDF) Push Publisher
 
+This repository contains the source code for Unified Data Feeds (UDF) push publisher which is primarily used for Push model data delivery.
 
-## Run pull update publisher
+The push publisher node constantly listens to new updates happening on oracle chain and publishes them to defined destination chains when certain conditions align. Those conditions are:
+* Price deviation threshold - percentage value of price change for the feed to be updated.
+* Heartbeat - time interval after which the update publishing is forced, used to help with stale feeds, so the latest update is gonna stay relatively recent.
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Changelog](#changelog)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Installation
+
+First, clone the repo.
+
+```
+$ git clone git@github.com:Entangle-Protocol/udf-update-publisher.git
+```
+
+Run all publisher tests
+
+```
+$ go test ./...
+```
+
+## Usage
+
+### Run the application with in-repo example config
+First, override the fields in the config to point to your networks and use your private key for signing update transactions.
+
+After you modified the config, run the publisher's CLI with the path to modified config
+```
+$ go run ./cmd/pull-update-publisher --config ./config.yaml
+```
+
+### Run pull update publisher
 
 ```
 export ETNANGLE_PUBLISHER=1TYXaYBYNuij5eHv4hrovXyMLxy7ybKPqjEYy8J8TWjAByGyxTiAwa9cvCweLVGUGbBUbnucYaE6MXYJDELdCk4
@@ -11,7 +48,7 @@ export LD_LIBRARY_PATH="."
 go run cmd/pull-update-publisher/main.go
 ```
 
-## Example of getting last update and getting the accounts data (solana)
+### Example of getting last update and getting the accounts data (solana)
 
 When latest update is applied one can see the following logs:
 
@@ -34,3 +71,19 @@ anchor account --provider.cluster devnet --idl udf_solana.json udf_solana.Latest
     "dataTimestamp":1725386002}
 }
 ```
+
+## Changelog
+
+[Changelog history](CHANGELOG.md)
+
+## Contributing
+
+[Contributing information](CONTRIBUTING.md)
+
+## Code of conduct
+
+[Regulations](CODE_OF_CONDUCT.md)
+
+## License
+
+[License](LICENSE)
