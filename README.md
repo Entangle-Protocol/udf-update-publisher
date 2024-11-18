@@ -14,6 +14,7 @@ The push publisher node constantly listens to new updates happening on oracle ch
 - [Usage](#usage)
 - [Changelog](#changelog)
 - [Contributing](#contributing)
+- [Code of Conduct](#code-of-conduct)
 - [License](#license)
 
 ## Installation
